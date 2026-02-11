@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import type { Metadata } from "next";
 import { Inter, Orbitron } from "next/font/google"; // Fonte wide/display
 import { Toaster } from "sonner";
