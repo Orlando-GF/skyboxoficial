@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 "use client";
 
 import { Link as LinkIcon, Copy, Check } from "lucide-react";
