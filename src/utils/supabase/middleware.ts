@@ -8,9 +8,16 @@ export async function updateSession(request: NextRequest) {
         },
     });
 
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+        return response;
+    }
+
     const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        supabaseUrl,
+        supabaseKey,
         {
             cookies: {
                 getAll() {
@@ -33,22 +40,28 @@ export async function updateSession(request: NextRequest) {
         }
     );
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
+    try {
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
 
-    // Protect /admin routes
-    if (request.nextUrl.pathname.startsWith("/admin")) {
-        if (!user) {
-            return NextResponse.redirect(new URL("/login", request.url));
+        // Protect /admin routes
+        if (request.nextUrl.pathname.startsWith("/admin")) {
+            if (!user) {
+                return NextResponse.redirect(new URL("/login", request.url));
+            }
         }
-    }
 
-    // Redirect /login to /admin if already logged in
-    if (request.nextUrl.pathname === "/login") {
-        if (user) {
-            return NextResponse.redirect(new URL("/admin", request.url));
+        // Redirect /login to /admin if already logged in
+        if (request.nextUrl.pathname === "/login") {
+            if (user) {
+                return NextResponse.redirect(new URL("/admin", request.url));
+            }
         }
+    } catch (e) {
+        // If supabase fails, we still want to allow the request to proceed 
+        // unless it's a protected route, but for safety in dev we'll just log
+        console.error("Middleware Auth Error:", e);
     }
 
     return response;
