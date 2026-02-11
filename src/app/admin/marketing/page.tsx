@@ -1,5 +1,5 @@
-export const runtime = 'edge';
 "use client";
+export const runtime = 'edge';
 
 import { Link as LinkIcon, Copy, Check } from "lucide-react";
 import { useState } from "react";
