@@ -1,8 +1,14 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { MessageCircle, PackageX, TrendingUp } from "lucide-react";
+
+// Dynamically import Recharts to keep it out of the Edge Function bundle
+const BarChartComponent = dynamic(() => import("./DashboardChart"), {
+    ssr: false,
+    loading: () => <div className="h-[300px] w-full bg-slate-800/20 animate-pulse rounded-lg flex items-center justify-center text-slate-500">Carregando gráfico...</div>
+});
 
 interface DashboardProps {
     metrics: {
@@ -32,7 +38,7 @@ export default function DashboardClient({ metrics, chartData }: DashboardProps) 
                     <CardContent>
                         <div className="text-2xl font-bold text-white">{metrics.whatsappClicks}</div>
                         <p className="text-xs text-emerald-500/80 mt-1">
-                            +12% em relação à semana passada
+                            Baseado em eventos reais
                         </p>
                     </CardContent>
                 </Card>
@@ -55,16 +61,16 @@ export default function DashboardClient({ metrics, chartData }: DashboardProps) 
                 <Card className="bg-slate-900 border-slate-800">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium text-slate-400">
-                            Produto Mais Desejado
+                            Destaque de Cliques
                         </CardTitle>
                         <TrendingUp className="h-4 w-4 text-purple-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-xl font-bold text-white truncate text-ellipsis overflow-hidden whitespace-nowrap" title={metrics.mostDesired}>
-                            {metrics.mostDesired || "N/A"}
+                            {metrics.mostDesired || "Nenhum ainda"}
                         </div>
                         <p className="text-xs text-slate-500 mt-1">
-                            Baseado em cliques
+                            Produto mais clicado
                         </p>
                     </CardContent>
                 </Card>
@@ -77,35 +83,7 @@ export default function DashboardClient({ metrics, chartData }: DashboardProps) 
                         <CardTitle className="text-white">Intenção de Compra x Hora do Dia</CardTitle>
                     </CardHeader>
                     <CardContent className="pl-2">
-                        <div className="h-[300px] w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={chartData}>
-                                    <XAxis
-                                        dataKey="hour"
-                                        stroke="#888888"
-                                        fontSize={12}
-                                        tickLine={false}
-                                        axisLine={false}
-                                    />
-                                    <YAxis
-                                        stroke="#888888"
-                                        fontSize={12}
-                                        tickLine={false}
-                                        axisLine={false}
-                                        tickFormatter={(value) => `${value}`}
-                                    />
-                                    <Tooltip
-                                        cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                        contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', color: '#fff' }}
-                                    />
-                                    <Bar dataKey="clicks" radius={[4, 4, 0, 0]}>
-                                        {chartData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.clicks > 5 ? "#10b981" : "#3b82f6"} />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
+                        <BarChartComponent chartData={chartData} />
                     </CardContent>
                 </Card>
             </div>

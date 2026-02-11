@@ -1,14 +1,14 @@
+```
 "use client";
-export const runtime = 'edge';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Link as LinkIcon, Copy, Check } from "lucide-react";
 
 export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
