@@ -93,9 +93,14 @@ export default async function Footer() {
                     <p className="text-xs text-slate-500">
                         © 2026 {store.name}. Todos os direitos reservados.
                     </p>
-                    <Link href="/login" className="text-[10px] text-slate-700 hover:text-primary transition-colors">
-                        Área Administrativa
-                    </Link>
+                    <div className="flex gap-4 justify-center">
+                        <Link href="/termos" className="text-[10px] text-slate-700 hover:text-primary transition-colors">
+                            Termos de Uso
+                        </Link>
+                        <Link href="/login" className="text-[10px] text-slate-700 hover:text-primary transition-colors">
+                            Área Administrativa
+                        </Link>
+                    </div>
                 </div>
             </div>
         </footer>
