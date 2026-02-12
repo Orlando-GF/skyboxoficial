@@ -104,9 +104,12 @@ export default function LandingPage({ products }: LandingPageProps) {
                         ))}
 
                     {/* Category Prompt */}
-                    <Link href="/catalogo" className="col-span-1 md:col-span-1 row-span-1 bg-secondary/10 border border-secondary/20 rounded-2xl flex items-center justify-center p-6 text-center hover:bg-secondary/20 transition-colors cursor-pointer group">
+                    <Link href="/catalogo" className="col-span-1 md:col-span-1 row-span-1 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center p-6 text-center hover:bg-white/10 hover:border-primary/50 transition-all cursor-pointer group">
                         <div>
-                            <h3 className="text-secondary font-bold text-xl group-hover:scale-110 transition-transform">Ver Catálogo Completo</h3>
+                            <h3 className="text-white font-bold text-xl group-hover:scale-105 transition-transform flex items-center justify-center gap-2">
+                                Ver Catálogo Completo
+                                <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+                            </h3>
                         </div>
                     </Link>
 
