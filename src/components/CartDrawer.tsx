@@ -2,6 +2,7 @@
 
 import { X, Minus, Plus, Trash2, MessageCircle } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
+import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { CartItem } from "@/types";
 import { formatBRL } from "@/utils/format";
@@ -10,13 +11,17 @@ import Image from "next/image";
 export default function CartDrawer() {
     const { items, isOpen, toggleCart, removeItem, updateQuantity, total } = useCartStore();
 
-    const handleCheckout = () => {
-        const phoneNumber = "5511999999999"; // Substituir pelo número real
+    const handleCheckout = async () => {
+        const supabase = createClient();
+        const { data: config } = await supabase.from("store_settings").select("whatsapp_number").single();
+        const phoneNumber = config?.whatsapp_number || "5511999999999";
+
         const itemsList = items
             .map((item) => `${item.quantity}x ${item.name} - ${formatBRL(item.price * item.quantity)}`)
             .join("\n");
 
-        const message = `Salve Skybox! ☁️ Montei meu kit no site:\n\n${itemsList}\n\nTotal: ${formatBRL(total())}\n\nAguardo a confirmação.`;
+        const totalValue = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+        const message = `Salve Skybox! ☁️ Montei meu kit no site:\n\n${itemsList}\n\nTotal: ${formatBRL(totalValue)}\n\nAguardo a confirmação.`;
 
         const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
         window.open(url, "_blank");
