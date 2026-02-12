@@ -40,8 +40,12 @@ export default function AgeGate() {
                     <motion.div
                         initial={{ scale: 0.9, y: 20 }}
                         animate={{ scale: 1, y: 0 }}
-                        className="w-full max-w-md bg-white/5 border border-white/10 rounded-2xl p-8 text-center shadow-2xl relative overflow-hidden"
+                        className="w-full max-w-md bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 text-center shadow-2xl relative overflow-y-auto max-h-[90vh] no-scrollbar"
                     >
+                        <style jsx>{`
+                            .no-scrollbar::-webkit-scrollbar { display: none; }
+                            .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+                        `}</style>
                         {/* Background Glow */}
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-primary/20 blur-[100px] rounded-full" />
 

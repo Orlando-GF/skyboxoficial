@@ -57,8 +57,12 @@ export default function CatalogClient({ initialProducts }: CatalogClientProps) {
                 </div>
             </div>
 
-            {/* Category Tabs */}
-            <div className="flex flex-wrap justify-center gap-4 mb-12">
+            {/* Category Tabs - Horizontal Scroll on Mobile, Wrapped on Desktop */}
+            <div className="flex flex-nowrap overflow-x-auto pb-4 mb-12 gap-4 no-scrollbar md:flex-wrap md:justify-center md:pb-0 md:overflow-visible">
+                <style jsx>{`
+                    .no-scrollbar::-webkit-scrollbar { display: none; }
+                    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+                `}</style>
                 {CATEGORIES.map(category => (
                     <button
                         key={category}
