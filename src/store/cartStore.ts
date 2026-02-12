@@ -23,10 +23,10 @@ export const useCartStore = create<CartStore>((set, get) => ({
                     items: state.items.map((i) =>
                         i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
                     ),
-                    isOpen: true, // Open cart when adding item
+                    // isOpen: true (Removed to keep cart closed)
                 };
             }
-            return { items: [...state.items, { ...item, quantity: 1 }], isOpen: true };
+            return { items: [...state.items, { ...item, quantity: 1 }] }; // isOpen: true (Removed)
         }),
     removeItem: (id) =>
         set((state) => ({
