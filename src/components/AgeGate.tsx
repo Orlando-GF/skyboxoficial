@@ -76,7 +76,7 @@ export default function AgeGate() {
                             </div>
 
                             <p className="text-xs text-gray-500 mt-4">
-                                Ao entrar, você concorda com nossos <a href="/termos" className="underline hover:text-white transition-colors">termos</a>.
+                                Ao entrar, você concorda com nossos <a href="/termos" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">termos</a>.
                             </p>
                         </div>
                     </motion.div>

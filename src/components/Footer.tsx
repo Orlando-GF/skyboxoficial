@@ -95,10 +95,10 @@ export default async function Footer() {
                         {config?.cnpj && <span className="block mt-1">CNPJ: {config.cnpj}</span>}
                     </p>
                     <div className="flex gap-4 justify-center">
-                        <Link href="/termos" className="text-[10px] text-slate-700 hover:text-primary transition-colors">
+                        <Link href="/termos" target="_blank" rel="noopener noreferrer" className="text-[10px] text-slate-700 hover:text-primary transition-colors">
                             Termos de Uso
                         </Link>
-                        <Link href="/login" className="text-[10px] text-slate-700 hover:text-primary transition-colors">
+                        <Link href="/login" target="_blank" rel="noopener noreferrer" className="text-[10px] text-slate-700 hover:text-primary transition-colors">
                             Área Administrativa
                         </Link>
                     </div>
