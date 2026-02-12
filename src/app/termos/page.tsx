@@ -20,10 +20,9 @@ export default async function TermosPage() {
 
                 <div className="space-y-8 text-neutral-400">
                     {hasCustomContent ? (
-                        <div
-                            className="prose prose-invert max-w-none"
-                            dangerouslySetInnerHTML={{ __html: config.terms_content }}
-                        />
+                        <div className="whitespace-pre-wrap font-sans text-neutral-300 leading-relaxed">
+                            {config.terms_content}
+                        </div>
                     ) : (
                         <>
                             <section>
