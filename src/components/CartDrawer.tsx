@@ -21,7 +21,10 @@ export default function CartDrawer() {
             .join("\n");
 
         const totalValue = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-        const message = `Salve Skybox! ☁️ Montei meu kit no site:\n\n${itemsList}\n\nTotal: ${formatBRL(totalValue)}\n\nAguardo a confirmação.`;
+        const isSingleItem = items.length === 1 && items[0].quantity === 1;
+        const introText = isSingleItem ? "Escolhi este item no site:" : "Montei meu kit no site:";
+
+        const message = `Salve Skybox! ✨ ${introText}\n\n${itemsList}\n\nTotal: ${formatBRL(totalValue)}\n\nAguardo a confirmação.`;
 
         const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
         window.open(url, "_blank");
