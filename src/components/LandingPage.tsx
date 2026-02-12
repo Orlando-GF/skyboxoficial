@@ -18,8 +18,10 @@ export default function LandingPage({ products }: LandingPageProps) {
     return (
         <main className="min-h-screen pb-24 relative overflow-x-hidden" suppressHydrationWarning>
             {/* Background Ambience */}
-            <div className="fixed inset-0 z-[-1] bg-[url('https://images.unsplash.com/photo-1543722530-d2c3201371e7?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center opacity-20" />
-            <div className="fixed top-0 left-0 w-full h-full z-[-1] bg-gradient-to-b from-transparent via-background/80 to-background" />
+            {/* Background Ambience matches Catalog */}
+            <div className="fixed inset-0 z-[-1] bg-[#050510]" />
+            <div className="fixed inset-0 z-[-1] bg-[url('https://images.unsplash.com/photo-1543722530-d2c3201371e7?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center opacity-10 pointer-events-none" />
+            <div className="fixed top-0 left-0 w-full h-full z-[-1] bg-gradient-to-b from-transparent via-[#050510]/80 to-[#050510]" />
 
             {/* Hero Section */}
             <header className="pt-20 pb-10 px-6 text-center relative z-10">
