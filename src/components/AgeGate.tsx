@@ -55,7 +55,7 @@ export default function AgeGate() {
                                 <h1 className="text-3xl font-display font-bold text-white mb-2 tracking-wider">
                                     SKYBOX
                                 </h1>
-                                <p className="text-muted text-sm">
+                                <p className="text-gray-300 text-sm font-medium tracking-wide">
                                     ACESSO RESTRITO PARA MAIORES DE 18 ANOS
                                 </p>
                             </div>
@@ -69,13 +69,13 @@ export default function AgeGate() {
                                 </button>
                                 <button
                                     onClick={handleReject}
-                                    className="w-full bg-transparent border border-white/10 hover:bg-white/5 text-muted hover:text-white font-medium py-3 px-6 rounded-xl transition-all active:scale-95"
+                                    className="w-full bg-transparent border border-white/10 hover:bg-white/5 text-gray-400 hover:text-white font-medium py-3 px-6 rounded-xl transition-all active:scale-95"
                                 >
                                     NÃO, SOU MENOR
                                 </button>
                             </div>
 
-                            <p className="text-xs text-muted/50">
+                            <p className="text-xs text-gray-500 mt-4">
                                 Ao entrar, você concorda com nossos termos.
                             </p>
                         </div>
