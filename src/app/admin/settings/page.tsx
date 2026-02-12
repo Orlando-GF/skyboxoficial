@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2, Link as LinkIcon, Copy, Check } from "lucide-react";
+import { formatCNPJ, validateCNPJ } from "@/utils/format";
 
 export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
@@ -47,6 +48,11 @@ export default function SettingsPage() {
     };
 
     const handleSave = async () => {
+        if (config.cnpj && !validateCNPJ(config.cnpj)) {
+            toast.error("CNPJ inválido. Por favor, verifique.");
+            return;
+        }
+
         setSaving(true);
         const { error } = await supabase
             .from("store_settings")
@@ -144,9 +150,10 @@ export default function SettingsPage() {
                             <Label className="text-slate-300">CNPJ</Label>
                             <Input
                                 value={config.cnpj || ""}
-                                onChange={(e) => setConfig({ ...config, cnpj: e.target.value })}
+                                onChange={(e) => setConfig({ ...config, cnpj: formatCNPJ(e.target.value) })}
                                 className="bg-slate-800 border-slate-700 text-white"
                                 placeholder="00.000.000/0001-00"
+                                maxLength={18}
                             />
                         </div>
                         <div className="space-y-2">
