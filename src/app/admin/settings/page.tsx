@@ -25,7 +25,9 @@ export default function SettingsPage() {
         hours_sunday: "",
         label_weekdays: "",
         label_saturday: "",
-        label_sunday: ""
+        label_sunday: "",
+        cnpj: "",
+        terms_content: ""
     });
     const supabase = createClient();
 
@@ -60,7 +62,9 @@ export default function SettingsPage() {
                 hours_sunday: config.hours_sunday,
                 label_weekdays: config.label_weekdays,
                 label_saturday: config.label_saturday,
-                label_sunday: config.label_sunday
+                label_sunday: config.label_sunday,
+                cnpj: config.cnpj,
+                terms_content: config.terms_content
             })
             .eq("id", config.id);
 
@@ -132,6 +136,29 @@ export default function SettingsPage() {
                             onChange={(e) => setConfig({ ...config, address: e.target.value })}
                             className="bg-slate-800 border-slate-700 text-white"
                         />
+                    </div>
+
+                    <div className="space-y-4 pt-4 border-t border-slate-800">
+                        <Label className="text-slate-300 text-lg">Informações Legais</Label>
+                        <div className="space-y-2">
+                            <Label className="text-slate-300">CNPJ</Label>
+                            <Input
+                                value={config.cnpj || ""}
+                                onChange={(e) => setConfig({ ...config, cnpj: e.target.value })}
+                                className="bg-slate-800 border-slate-700 text-white"
+                                placeholder="00.000.000/0001-00"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-slate-300">Conteúdo dos Termos de Uso e Política de Privacidade</Label>
+                            <p className="text-xs text-slate-500 mb-2">Este texto aparecerá na página /termos. Aceita HTML simples ou texto corrido.</p>
+                            <textarea
+                                value={config.terms_content || ""}
+                                onChange={(e) => setConfig({ ...config, terms_content: e.target.value })}
+                                className="w-full h-64 bg-slate-800 border-slate-700 text-white rounded-md p-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary"
+                                placeholder="Digite aqui os termos de uso..."
+                            />
+                        </div>
                     </div>
 
                     <div className="space-y-4 pt-4 border-t border-slate-800">

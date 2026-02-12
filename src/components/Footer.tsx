@@ -92,6 +92,7 @@ export default async function Footer() {
                 <div className="border-t border-white/5 pt-8 text-center flex flex-col items-center gap-2">
                     <p className="text-xs text-slate-500">
                         © 2026 {store.name}. Todos os direitos reservados.
+                        {config?.cnpj && <span className="block mt-1">CNPJ: {config.cnpj}</span>}
                     </p>
                     <div className="flex gap-4 justify-center">
                         <Link href="/termos" className="text-[10px] text-slate-700 hover:text-primary transition-colors">
