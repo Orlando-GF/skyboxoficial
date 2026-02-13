@@ -29,8 +29,14 @@ export default async function DashboardPage() {
         .order("created_at", { ascending: false })
         .limit(1);
 
-    const productData = recentEvents?.[0]?.products as any;
-    const mostDesired = Array.isArray(productData) ? productData[0]?.name : productData?.name || "Nenhum ainda";
+    const productData = recentEvents?.[0]?.products as unknown as { name: string };
+    const mostDesired = productData?.name || "Nenhum ainda";
+
+    // 4. Get Campaign Leads
+    const { count: campaignLeads } = await supabase
+        .from("events")
+        .select("*", { count: "exact", head: true })
+        .eq("type", "campaign_visit");
 
     // 4. Chart Data: Mock for now, or aggregate by hour
     // To do this properly in Supabase without RPC is hard. Mocking the chart structure first.
@@ -50,7 +56,8 @@ export default async function DashboardPage() {
             metrics={{
                 whatsappClicks: whatsappClicks || 0,
                 outOfStock: outOfStock || 0,
-                mostDesired: String(mostDesired)
+                mostDesired: String(mostDesired),
+                campaignLeads: campaignLeads || 0
             }}
             chartData={chartData}
         />

@@ -22,10 +22,10 @@
   --popover: #0f172a;
   --popover-foreground: #f8fafc;
 
-  /* Primary: Neon Pink */
-  --primary: #ec4899;
-  /* Pink 500 */
-  --primary-foreground: #ffffff;
+  /* Primary: Acid Green (Disruptive & Premium) */
+  --primary: #bef264;
+  /* Lime 300 / Acid Green */
+  --primary-foreground: #020617;
 
   /* Secondary: Cyber Cyan */
   --secondary: #22d3ee;
@@ -50,27 +50,18 @@
   /* Borders & Inputs */
   --border: #1e293b;
   --input: #1e293b;
-  --ring: #ec4899;
-  /* Matches Primary */
+  --ring: #bef264;
+  /* Matches Acid Green Primary */
 
   /* Charts (Recharts) */
-  --chart-1: #ec4899;
+  --chart-1: #bef264;
   --chart-2: #22d3ee;
   --chart-3: #10b981;
   --chart-4: #f59e0b;
   --chart-5: #8b5cf6;
 
-  /* Sidebar (Admin) */
-  --sidebar: #020617;
-  --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #ec4899;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1e293b;
-  --sidebar-accent-foreground: #f8fafc;
-  --sidebar-border: #1e293b;
-  --sidebar-ring: #ec4899;
-
-  --radius: 0.625rem;
+  /* BRUTALIST GEOMETRY (0px) */
+  --radius: 0rem;
 }
 
 .light {
@@ -81,8 +72,8 @@
   --card-foreground: #020617;
   --popover: #ffffff;
   --popover-foreground: #020617;
-  --primary: #ec4899;
-  --primary-foreground: #ffffff;
+  --primary: #bef264;
+  --primary-foreground: #020617;
   --secondary: #f1f5f9;
   --secondary-foreground: #0f172a;
   --muted: #f1f5f9;
@@ -146,13 +137,13 @@
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
 }
 
 body {
@@ -169,26 +160,24 @@ body {
   }
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar (Brutalist Protocol) */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #020617;
-  /* Background */
+  background: #000;
+  border-left: 2px solid #1e293b;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  /* Muted/Slate-800 */
-  border-radius: 5px;
-  border: 2px solid #020617;
-  /* Padding effect */
+  background: #bef264;
+  /* Acid Green */
+  border: 3px solid #000;
+  border-radius: 0px !important;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
-  /* Slate-700 */
+  background: #fff;
 }

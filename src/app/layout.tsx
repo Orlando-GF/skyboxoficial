@@ -5,6 +5,7 @@ import AgeGate from "@/components/AgeGate";
 import CartDrawer from "@/components/CartDrawer";
 import CartFab from "@/components/CartFab";
 import Footer from "@/components/Footer";
+import ConditionalLayout from "@/components/ConditionalLayout";
 import "./globals.css";
 
 const inter = Inter({
@@ -33,11 +34,18 @@ export default function RootLayout({
         className={`${inter.variable} ${orbitron.variable} antialiased bg-background text-foreground`}
         suppressHydrationWarning
       >
-        <AgeGate />
-        <CartDrawer />
-        <CartFab />
+        <ConditionalLayout>
+          <AgeGate />
+          <CartDrawer />
+          <CartFab />
+        </ConditionalLayout>
+
         {children}
-        <Footer />
+
+        <ConditionalLayout>
+          <Footer />
+        </ConditionalLayout>
+
         <Toaster position="top-center" richColors theme="dark" />
       </body>
     </html>

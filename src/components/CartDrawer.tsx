@@ -40,7 +40,7 @@ export default function CartDrawer() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={toggleCart}
-                        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+                        className="fixed inset-0 z-40 bg-black/80"
                     />
 
                     {/* Drawer */}
@@ -48,12 +48,12 @@ export default function CartDrawer() {
                         initial={{ x: "100%" }}
                         animate={{ x: 0 }}
                         exit={{ x: "100%" }}
-                        transition={{ type: "spring", damping: 20, stiffness: 100 }}
-                        className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-card/60 backdrop-blur-2xl border-l border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col"
+                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-black border-l-2 border-primary shadow-2xl flex flex-col"
                     >
-                        <div className="p-6 border-b border-white/10 flex items-center justify-between">
-                            <h2 className="text-2xl font-display font-bold text-white">Seu Kit</h2>
-                            <button onClick={toggleCart} className="text-muted hover:text-white transition-colors">
+                        <div className="p-8 border-b-2 border-white/5 flex items-center justify-between">
+                            <h2 className="text-3xl font-display font-bold text-white uppercase tracking-tighter">PROTOCOL_CART</h2>
+                            <button onClick={toggleCart} className="text-primary/60 hover:text-primary transition-colors border border-white/10 p-2 hover:bg-primary/5">
                                 <X className="w-6 h-6" />
                             </button>
                         </div>
@@ -69,9 +69,9 @@ export default function CartDrawer() {
                                     <motion.div
                                         layout
                                         key={item.id}
-                                        className="flex gap-4 p-4 bg-white/5 rounded-xl border border-white/5"
+                                        className="flex gap-4 p-4 bg-white/5 border-2 border-white/5"
                                     >
-                                        <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-black/20 shrink-0">
+                                        <div className="relative w-20 h-20 rounded-none overflow-hidden bg-black/20 shrink-0 border border-white/10">
                                             {/* Placeholder image */}
                                             {item.image && <Image src={item.image} alt={item.name} fill className="object-cover" />}
                                         </div>
@@ -81,10 +81,10 @@ export default function CartDrawer() {
                                                 <p className="text-secondary font-mono">{formatBRL(item.price)}</p>
                                             </div>
                                             <div className="flex items-center gap-3">
-                                                <div className="flex items-center gap-2 bg-white/10 rounded-lg p-1">
+                                                <div className="flex items-center gap-2 bg-white/10 p-1">
                                                     <button
                                                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                        className="p-1 hover:text-primary transition-colors disabled:opacity-50"
+                                                        className="p-1 hover:text-primary transition-colors disabled:opacity-30"
                                                         disabled={item.quantity <= 1}
                                                     >
                                                         <Minus className="w-4 h-4" />
@@ -99,7 +99,7 @@ export default function CartDrawer() {
                                                 </div>
                                                 <button
                                                     onClick={() => removeItem(item.id)}
-                                                    className="text-muted hover:text-red-500 transition-colors ml-auto"
+                                                    className="text-primary/40 hover:text-red-500 transition-colors ml-auto p-1 border border-white/5 hover:border-red-500/20"
                                                 >
                                                     <Trash2 className="w-5 h-5" />
                                                 </button>
@@ -110,20 +110,20 @@ export default function CartDrawer() {
                             )}
                         </div>
 
-                        <div className="p-6 border-t border-white/10 bg-black/20">
-                            <div className="flex items-center justify-between mb-4">
-                                <span className="text-muted">Total</span>
-                                <span className="text-2xl font-bold text-white font-mono">
+                        <div className="p-8 border-t-2 border-white/5 bg-black">
+                            <div className="flex items-center justify-between mb-8">
+                                <span className="text-primary/60 font-bold uppercase tracking-widest text-xs">Total Order</span>
+                                <span className="text-3xl font-bold text-primary font-mono">
                                     {formatBRL(total())}
                                 </span>
                             </div>
                             <button
                                 onClick={handleCheckout}
                                 disabled={items.length === 0}
-                                className="w-full bg-[#25D366] hover:bg-[#20bd5a] disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95"
+                                className="w-full bg-primary hover:bg-white text-black font-black py-5 border-2 border-primary hover:border-white transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-xs"
                             >
                                 <MessageCircle className="w-5 h-5" />
-                                Enviar Pedido no WhatsApp
+                                TRANSMITIR PEDIDO
                             </button>
                         </div>
                     </motion.div>

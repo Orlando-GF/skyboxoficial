@@ -60,30 +60,24 @@ export default function ProductsPage() {
     };
 
     const handleFormSubmit = async (values: ProductFormValues) => {
+        setLoading(true);
         try {
-            if (editingProduct) {
-                const { error } = await supabase
-                    .from("products")
-                    .update(values)
-                    .eq("id", editingProduct.id);
+            const query = editingProduct
+                ? supabase.from("products").update(values).eq("id", editingProduct.id)
+                : supabase.from("products").insert([values]);
 
-                if (error) throw error;
-                toast.success("Produto atualizado com sucesso!");
-            } else {
-                const { error } = await supabase
-                    .from("products")
-                    .insert([values]);
+            const { error } = await query;
+            if (error) throw error;
 
-                if (error) throw error;
-                toast.success("Produto criado com sucesso!");
-            }
-
+            toast.success(`Produto ${editingProduct ? "atualizado" : "criado"} com sucesso!`);
             setIsDialogOpen(false);
             setEditingProduct(null);
             fetchProducts();
         } catch (error) {
             console.error(error);
-            toast.error("Erro ao salvar produto.");
+            toast.error("Erro ao salvar produto. Verifique os dados.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -97,37 +91,40 @@ export default function ProductsPage() {
         <div className="space-y-8">
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-3xl font-bold font-display tracking-tight text-white">Produtos</h2>
-                    <p className="text-slate-400">Gerencie seu catálogo completo.</p>
+                    <h2 className="text-4xl font-display font-bold tracking-tighter text-white uppercase">Sincronizador de Produtos</h2>
+                    <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-primary/60 mt-2">Protocolo de Inventário v2.0</p>
                 </div>
 
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
-                        <Button onClick={() => setEditingProduct(null)} className="gap-2">
-                            <Plus size={18} />
-                            Novo Produto
+                        <Button onClick={() => setEditingProduct(null)} className="rounded-none bg-primary text-black font-bold hover:bg-white transition-all uppercase text-[10px] tracking-widest h-12 px-8">
+                            <Plus size={16} className="mr-2" />
+                            ADICIONAR ITEM
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-2xl bg-card border-border text-white shadow-[0_0_50px_-12px_rgba(236,72,153,0.3)] max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                            <DialogTitle>{editingProduct ? "Editar Produto" : "Criar Novo Produto"}</DialogTitle>
-                            <DialogDescription>
-                                Preencha os detalhes do produto abaixo. SEO e Tags são importantes.
+                    <DialogContent className="max-w-2xl bg-black border-2 border-white/5 rounded-none text-white shadow-[0_0_50px_-12px_rgba(190,242,100,0.1)] max-h-[90vh] overflow-y-auto p-0">
+                        <DialogHeader className="p-8 border-b-2 border-white/5 bg-primary/5">
+                            <DialogTitle className="text-3xl font-display font-black uppercase tracking-tighter text-primary">
+                                {editingProduct ? "EDITAR_REGISTRO" : "NOVO_REGISTRO"}
+                            </DialogTitle>
+                            <DialogDescription className="text-[10px] uppercase font-bold tracking-[0.3em] text-primary/40 mt-1">
+                                PROTOCOLO DE INVENTÁRIO // METADADOS TÉCNICOS
                             </DialogDescription>
                         </DialogHeader>
 
-                        <ProductForm
-                            initialData={editingProduct || undefined}
-                            onSubmit={handleFormSubmit}
-                            isLoading={loading} // Reusing loading state for submission lock loosely
-                        />
+                        <div className="p-8">
+
+                            <ProductForm
+                                initialData={editingProduct || undefined}
+                                onSubmit={handleFormSubmit}
+                                isLoading={loading}
+                            />
+                        </div>
                     </DialogContent>
                 </Dialog>
             </div>
 
-            <div className="bg-slate-900/50 p-1 rounded-xl border border-slate-800/50">
-                <DataTable columns={columns} data={products} />
-            </div>
+            <DataTable columns={columns} data={products} />
         </div>
     );
 }

@@ -10,10 +10,14 @@ export default function CartFab() {
 
     return (
         <motion.button
-            whileHover={{ scale: 1.1 }}
+            whileHover={{
+                scale: 1.1,
+                rotate: 5,
+                transition: { type: "spring", stiffness: 400, damping: 10 }
+            }}
             whileTap={{ scale: 0.9 }}
             onClick={toggleCart}
-            className="fixed bottom-6 right-6 z-40 bg-primary hover:bg-primary/90 text-white p-4 rounded-full shadow-[0_0_20px_rgba(255,0,127,0.4)] transition-colors"
+            className="fixed bottom-8 right-8 z-40 bg-primary text-black p-5 border-2 border-black shadow-[4px_4px_0px_#ffffff20] hover:shadow-[6px_6px_0px_#ffffff40] transition-all"
         >
             <ShoppingBag className="w-6 h-6" />
             <AnimatePresence>
@@ -22,7 +26,7 @@ export default function CartFab() {
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         exit={{ scale: 0 }}
-                        className="absolute -top-2 -right-2 bg-secondary text-black text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full border-2 border-background"
+                        className="absolute -top-3 -right-3 bg-white text-black text-[10px] font-black w-7 h-7 flex items-center justify-center border-2 border-black"
                     >
                         {itemCount}
                     </motion.span>

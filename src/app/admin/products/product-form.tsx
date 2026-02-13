@@ -24,7 +24,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { X, Upload, Loader2, Image as ImageIcon } from "lucide-react";
 
@@ -36,6 +36,7 @@ interface ProductFormProps {
 
 export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormProps) {
     const form = useForm<ProductFormValues>({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resolver: zodResolver(productSchema) as any,
         defaultValues: {
             name: initialData?.name || "",
@@ -53,23 +54,42 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
     });
 
     const [tagInput, setTagInput] = useState("");
+    const [allTags, setAllTags] = useState<string[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const supabase = createClient();
 
-    const addTag = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter" && tagInput.trim()) {
-            e.preventDefault();
-            const currentTags = form.getValues("flavor_tags") || [];
-            if (!currentTags.includes(tagInput.trim())) {
-                form.setValue("flavor_tags", [...currentTags, tagInput.trim()]);
+    useEffect(() => {
+        const fetchTags = async () => {
+            const { data } = await supabase.from("products").select("flavor_tags");
+            if (data) {
+                const uniqueTags = new Set<string>();
+                data.forEach(p => {
+                    p.flavor_tags?.forEach((tag: string) => uniqueTags.add(tag));
+                });
+                setAllTags(Array.from(uniqueTags).sort());
             }
-            setTagInput("");
+        };
+        fetchTags();
+    }, [supabase]);
+
+    const addTag = (tag: string) => {
+        const currentTags = form.getValues("flavor_tags") || [];
+        if (!currentTags.includes(tag.trim())) {
+            form.setValue("flavor_tags", [...currentTags, tag.trim()]);
         }
     };
 
     const removeTag = (tag: string) => {
         const currentTags = form.getValues("flavor_tags") || [];
         form.setValue("flavor_tags", currentTags.filter((t) => t !== tag));
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter" && tagInput.trim()) {
+            e.preventDefault();
+            addTag(tagInput);
+            setTagInput("");
+        }
     };
 
     return (
@@ -81,11 +101,15 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                         name="name"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Nome do Produto</FormLabel>
+                                <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Nomenclatura do Produto</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Ex: Essência Zomo Strong Mint" {...field} />
+                                    <Input
+                                        placeholder="EX: ESSÊNCIA ZOMO STRONG MINT"
+                                        {...field}
+                                        className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all uppercase text-xs tracking-widest"
+                                    />
                                 </FormControl>
-                                <FormMessage />
+                                <FormMessage className="text-[10px] uppercase font-bold tracking-tighter" />
                             </FormItem>
                         )}
                     />
@@ -95,9 +119,10 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                         name="price"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Preço (R$)</FormLabel>
+                                <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Valor de Crédito (R$)</FormLabel>
                                 <FormControl>
                                     <Input
+                                        className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all text-sm font-mono"
                                         placeholder="R$ 0,00"
                                         value={field.value ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(field.value) : ""}
                                         onChange={(e) => {
@@ -107,7 +132,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                                         }}
                                     />
                                 </FormControl>
-                                <FormMessage />
+                                <FormMessage className="text-[10px] uppercase font-bold tracking-tighter" />
                             </FormItem>
                         )}
                     />
@@ -118,14 +143,18 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                     name="description"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Descrição Curta (Aparece no Destaque)</FormLabel>
+                            <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Resumo de Vitrine (Tática)</FormLabel>
                             <FormControl>
-                                <Input placeholder="Descreva brevemente o produto para a vitrine..." {...field} />
+                                <Input
+                                    placeholder="BREVE DESCRIÇÃO TÉCNICA..."
+                                    {...field}
+                                    className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all text-xs"
+                                />
                             </FormControl>
-                            <FormDescription>
-                                Esse texto aparece logo abaixo do nome no card grande da página inicial.
+                            <FormDescription className="text-[9px] uppercase font-bold tracking-widest text-white/20">
+                                Visível abaixo do identificador na página principal.
                             </FormDescription>
-                            <FormMessage />
+                            <FormMessage className="text-[10px] uppercase font-bold tracking-tighter" />
                         </FormItem>
                     )}
                 />
@@ -136,23 +165,23 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                         name="category"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Categoria</FormLabel>
+                                <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Classificação de Inventário</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Selecione..." />
+                                        <SelectTrigger className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all text-xs uppercase tracking-widest">
+                                            <SelectValue placeholder="SELECIONE..." />
                                         </SelectTrigger>
                                     </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="Kits">Kits</SelectItem>
-                                        <SelectItem value="Essências">Essências</SelectItem>
-                                        <SelectItem value="Carvão">Carvão</SelectItem>
-                                        <SelectItem value="Acessórios">Acessórios</SelectItem>
-                                        <SelectItem value="Narguiles">Narguiles</SelectItem>
-                                        <SelectItem value="Pod Descartável">Pod Descartável</SelectItem>
+                                    <SelectContent className="bg-black border-2 border-white/10 text-white rounded-none">
+                                        <SelectItem value="Kits" className="hover:bg-primary hover:text-black transition-colors uppercase text-[10px] font-bold tracking-widest cursor-pointer">Kits</SelectItem>
+                                        <SelectItem value="Essências" className="hover:bg-primary hover:text-black transition-colors uppercase text-[10px] font-bold tracking-widest cursor-pointer">Essências</SelectItem>
+                                        <SelectItem value="Carvão" className="hover:bg-primary hover:text-black transition-colors uppercase text-[10px] font-bold tracking-widest cursor-pointer">Carvão</SelectItem>
+                                        <SelectItem value="Acessórios" className="hover:bg-primary hover:text-black transition-colors uppercase text-[10px] font-bold tracking-widest cursor-pointer">Acessórios</SelectItem>
+                                        <SelectItem value="Narguiles" className="hover:bg-primary hover:text-black transition-colors uppercase text-[10px] font-bold tracking-widest cursor-pointer">Narguiles</SelectItem>
+                                        <SelectItem value="Pod Descartável" className="hover:bg-primary hover:text-black transition-colors uppercase text-[10px] font-bold tracking-widest cursor-pointer">Pod Descartável</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <FormMessage />
+                                <FormMessage className="text-[10px] uppercase font-bold tracking-tighter" />
                             </FormItem>
                         )}
                     />
@@ -164,15 +193,16 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                         control={form.control}
                         name="stock"
                         render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-800 p-3 bg-slate-900/50">
-                                <div className="space-y-0.5">
-                                    <FormLabel>Em Estoque</FormLabel>
-                                    <FormDescription>
-                                        Disponível para venda imediata
+                            <FormItem className="flex flex-row items-center justify-between rounded-none border-2 border-white/5 p-6 bg-black group hover:border-primary/30 transition-all">
+                                <div className="space-y-1">
+                                    <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-white">Disponibilidade</FormLabel>
+                                    <FormDescription className="text-[9px] uppercase font-bold tracking-widest text-slate-500">
+                                        Status de Estoque Imediato
                                     </FormDescription>
                                 </div>
                                 <FormControl>
                                     <Switch
+                                        className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-slate-800"
                                         checked={field.value}
                                         onCheckedChange={field.onChange}
                                     />
@@ -185,15 +215,16 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                         control={form.control}
                         name="featured"
                         render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border border-yellow-500/20 p-3 bg-yellow-500/5">
-                                <div className="space-y-0.5">
-                                    <FormLabel className="text-yellow-400 font-bold">Destaque na Capa 🌟</FormLabel>
-                                    <FormDescription className="text-yellow-200/50">
-                                        Aparecerá grandão na página inicial
+                            <FormItem className="flex flex-row items-center justify-between rounded-none border-2 border-primary/20 p-6 bg-primary/5 group hover:border-primary/50 transition-all">
+                                <div className="space-y-1">
+                                    <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-primary">Protocolo Destaque ⚡</FormLabel>
+                                    <FormDescription className="text-[9px] uppercase font-bold tracking-widest text-primary/40">
+                                        Exposição Premium na Home
                                     </FormDescription>
                                 </div>
                                 <FormControl>
                                     <Switch
+                                        className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-primary/20"
                                         checked={field.value}
                                         onCheckedChange={field.onChange}
                                     />
@@ -204,19 +235,40 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                 </div>
 
                 {/* Tags Section */}
-                <div className="space-y-2">
-                    <FormLabel>Tags de Sabor / Características</FormLabel>
+                <div className="space-y-3">
+                    <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Atributos & Tags (Filtros)</FormLabel>
                     <Input
-                        placeholder="Digite e aperte Enter (ex: Mentolado, Doce)"
+                        placeholder="DIGITE E APERTE ENTER (EX: MENTOLADO, DOCE)"
                         value={tagInput}
                         onChange={(e) => setTagInput(e.target.value)}
-                        onKeyDown={addTag}
+                        onKeyDown={handleKeyDown}
+                        className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all uppercase text-[10px] font-bold tracking-widest"
                     />
-                    <div className="flex flex-wrap gap-2 mt-2">
+
+                    {/* Suggested Tags (Library) */}
+                    {allTags.length > 0 && (
+                        <div className="space-y-2 mt-4">
+                            <span className="text-[8px] uppercase font-bold tracking-[0.3em] text-white/40">Vocabulário de Sabores Registrados:</span>
+                            <div className="flex flex-wrap gap-1.5 opacity-60 hover:opacity-100 transition-opacity max-h-24 overflow-y-auto no-scrollbar border-l-2 border-white/5 pl-4 py-1">
+                                {allTags.map((tag) => (
+                                    <button
+                                        key={tag}
+                                        type="button"
+                                        onClick={() => addTag(tag)}
+                                        className="text-[9px] uppercase font-bold tracking-widest text-slate-400 border border-white/10 px-2 py-1 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all"
+                                    >
+                                        + {tag}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex flex-wrap gap-2 mt-6">
                         {form.watch("flavor_tags")?.map((tag, index) => (
-                            <div key={index} className="bg-primary/20 text-primary px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                            <div key={index} className="bg-primary text-black font-black px-4 py-2 rounded-none text-[9px] uppercase flex items-center gap-2 tracking-widest border border-white/10 shadow-[2px_2px_0px_#000]">
                                 {tag}
-                                <button type="button" onClick={() => removeTag(tag)} className="hover:text-white"><X size={14} /></button>
+                                <button type="button" onClick={() => removeTag(tag)} className="hover:text-red-600 transition-colors"><X size={10} strokeWidth={4} /></button>
                             </div>
                         ))}
                     </div>
@@ -227,26 +279,26 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                     name="image"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Imagem do Produto</FormLabel>
+                            <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Documentação Visual (PNG/JPG)</FormLabel>
                             <FormControl>
                                 <div className="space-y-4">
-                                    {/* Image Preview */}
                                     {field.value ? (
-                                        <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-slate-700 bg-slate-900 group">
+                                        <div className="relative aspect-video w-full rounded-none overflow-hidden border-2 border-white/10 bg-black group">
                                             <img
                                                 src={field.value}
                                                 alt="Preview"
-                                                className="w-full h-full object-cover"
+                                                className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 ease-in-out"
                                             />
-                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
                                                 <Button
                                                     type="button"
                                                     variant="destructive"
                                                     size="sm"
+                                                    className="rounded-none border-2 border-white/20 bg-black hover:bg-red-600 text-white transition-all uppercase text-[10px] font-black h-12 px-8 tracking-[0.2em]"
                                                     onClick={() => field.onChange("")}
                                                 >
-                                                    <X className="w-4 h-4 mr-2" />
-                                                    Remover
+                                                    <X className="w-5 h-5 mr-3" />
+                                                    DELETAR_ARQUIVO
                                                 </Button>
                                             </div>
                                         </div>
@@ -254,108 +306,104 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                                         <div className="flex items-center justify-center w-full">
                                             <label
                                                 htmlFor="image-upload"
-                                                className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer transition-colors
-                                                ${isUploading ? "border-slate-600 bg-slate-800/50" : "border-slate-700 bg-slate-900/50 hover:bg-slate-800 hover:border-primary/50"}
+                                                className={`flex flex-col items-center justify-center w-full h-56 border-2 border-dashed rounded-none cursor-pointer transition-all
+                                                ${isUploading ? "border-primary bg-primary/5 animate-pulse" : "border-white/10 bg-black hover:bg-primary/5 hover:border-primary/50"}
                                                 `}
                                             >
                                                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                                     {isUploading ? (
                                                         <>
-                                                            <Loader2 className="w-8 h-8 mb-2 text-primary animate-spin" />
-                                                            <p className="text-sm text-slate-400">Enviando...</p>
+                                                            <Loader2 className="w-10 h-10 mb-4 text-primary animate-spin" />
+                                                            <p className="text-[10px] uppercase font-bold tracking-widest text-primary">UPLOAD_IN_PROGRESS...</p>
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <Upload className="w-8 h-8 mb-2 text-slate-400" />
-                                                            <p className="text-sm text-slate-400 mb-1"><span className="font-semibold text-primary">Clique para enviar</span> ou arraste</p>
-                                                            <p className="text-xs text-slate-500 text-center px-4">
-                                                                Recomendado: 800x800px (Quadrado)<br />
-                                                                Formatos: PNG, JPG ou WEBP<br />
-                                                                Tamanho Máximo: 5MB
+                                                            <div className="bg-white/5 p-4 rounded-none mb-4 border border-white/5">
+                                                                <Upload className="w-8 h-8 text-white/40" />
+                                                            </div>
+                                                            <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-2">
+                                                                <span className="text-primary underline decoration-2 underline-offset-4">LINK_DADOS</span> OU ARRASTE
+                                                            </p>
+                                                            <p className="text-[9px] uppercase font-bold tracking-[0.2em] text-slate-600 text-center leading-relaxed">
+                                                                TARGET: 800x800px // FORMAT: PNG/WEBP<br />
+                                                                CAPACITY_LIMIT: 5.0MB
                                                             </p>
                                                         </>
                                                     )}
                                                 </div>
-                                                <Input
-                                                    id="image-upload"
-                                                    type="file"
-                                                    accept="image/*"
-                                                    className="hidden"
-                                                    disabled={isUploading}
-                                                    onChange={async (e) => {
-                                                        const file = e.target.files?.[0];
-                                                        if (!file) return;
-
-                                                        setIsUploading(true);
-                                                        try {
-                                                            const fileExt = file.name.split('.').pop();
-                                                            const fileName = `${Math.random()}.${fileExt}`;
-                                                            const filePath = `${fileName}`;
-
-                                                            const { error: uploadError } = await supabase.storage
-                                                                .from('products')
-                                                                .upload(filePath, file);
-
-                                                            if (uploadError) {
-                                                                throw uploadError;
-                                                            }
-
-                                                            const { data: { publicUrl } } = supabase.storage
-                                                                .from('products')
-                                                                .getPublicUrl(filePath);
-
-                                                            field.onChange(publicUrl);
-                                                        } catch (error) {
-                                                            console.error("Error uploading image:", error);
-                                                            alert("Erro ao enviar imagem. Tente novamente.");
-                                                        } finally {
-                                                            setIsUploading(false);
-                                                        }
-                                                    }}
-                                                />
+                                                <Input id="image-upload" type="file" accept="image/*" className="hidden" disabled={isUploading} onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (!file) return;
+                                                    setIsUploading(true);
+                                                    try {
+                                                        const fileExt = file.name.split('.').pop();
+                                                        const fileName = `${Math.random()}.${fileExt}`;
+                                                        const { error: uploadError } = await supabase.storage.from('products').upload(fileName, file);
+                                                        if (uploadError) throw uploadError;
+                                                        const { data: { publicUrl } } = supabase.storage.from('products').getPublicUrl(fileName);
+                                                        field.onChange(publicUrl);
+                                                    } catch (error) {
+                                                        console.error(error);
+                                                        alert("CRITICAL_UPLOAD_FAILURE");
+                                                    } finally {
+                                                        setIsUploading(false);
+                                                    }
+                                                }} />
                                             </label>
                                         </div>
                                     )}
                                 </div>
                             </FormControl>
-                            <FormMessage />
+                            <FormMessage className="text-[10px] uppercase font-bold tracking-tighter" />
                         </FormItem>
                     )}
                 />
 
-                {/* SEO Section (Collapsible ideally, but plain for now) */}
-                <div className="border-t border-slate-800 pt-6 mt-6">
-                    <h3 className="text-lg font-bold mb-4 text-emerald-500">SEO & Busca</h3>
-                    <FormField
-                        control={form.control}
-                        name="seo_title"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Meta Title (Google)</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Titulo otimizado para busca" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="seo_description"
-                        render={({ field }) => (
-                            <FormItem className="mt-4">
-                                <FormLabel>Meta Description</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Descrição curta para aparecer no Google" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                <div className="border-t-2 border-white/5 pt-10 mt-16 bg-primary/5 -mx-8 px-8 pb-10">
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="h-0.5 w-12 bg-primary"></div>
+                        <h3 className="text-2xl font-display font-bold text-primary uppercase tracking-tighter">SEO & Metadados G.O. (Central de Dados)</h3>
+                    </div>
+                    <div className="grid grid-cols-1 gap-6">
+                        <FormField
+                            control={form.control}
+                            name="seo_title"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Target: Meta_Title (Google_Sync)</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="TÍTULO OTIMIZADO PARA INDEXAÇÃO..."
+                                            {...field}
+                                            className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all text-xs uppercase"
+                                        />
+                                    </FormControl>
+                                    <FormMessage className="text-[10px] uppercase font-bold tracking-tighter" />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="seo_description"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Target: Meta_Description (Snippet_Context)</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="DESCRIÇÃO ESTRATÉGICA PARA ALGORITMOS..."
+                                            {...field}
+                                            className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all text-xs uppercase"
+                                        />
+                                    </FormControl>
+                                    <FormMessage className="text-[10px] uppercase font-bold tracking-tighter" />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                 </div>
 
-                <Button type="submit" disabled={isLoading} className="w-full">
-                    {isLoading ? "Salvando..." : "Salvar Produto"}
+                <Button type="submit" disabled={isLoading} className="w-full h-14 rounded-none bg-primary text-black font-bold hover:bg-white transition-all uppercase tracking-[0.2em] text-sm">
+                    {isLoading ? "Processando..." : "Sincronizar Produto"}
                 </Button>
             </form>
         </Form>

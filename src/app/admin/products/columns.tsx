@@ -30,14 +30,16 @@ interface ColumnsProps {
 export const getColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Product>[] => [
     {
         accessorKey: "image",
-        header: "Img",
+        header: () => <div className="text-[10px] uppercase font-bold tracking-[0.2em] text-primary text-center">IMG</div>,
         cell: ({ row }) => (
-            <div className="w-10 h-10 rounded-md overflow-hidden bg-slate-800 relative">
-                <img
-                    src={row.getValue("image") || "https://placehold.co/400"}
-                    alt=""
-                    className="w-full h-full object-cover"
-                />
+            <div className="flex justify-center">
+                <div className="w-10 h-10 rounded-none border border-white/10 bg-black relative overflow-hidden">
+                    <img
+                        src={row.getValue("image") || "https://placehold.co/400"}
+                        alt=""
+                        className="w-full h-full object-cover"
+                    />
+                </div>
             </div>
         ),
     },
@@ -48,25 +50,58 @@ export const getColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Produc
                 <Button
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                    className="text-primary font-display font-bold uppercase tracking-tighter hover:bg-primary/10 p-0 h-auto"
                 >
                     Nome
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                    <ArrowUpDown className="ml-2 h-3 w-3" />
                 </Button>
             );
         },
     },
     {
         accessorKey: "category",
-        header: "Categoria",
+        header: () => <div className="text-[10px] uppercase font-bold tracking-[0.2em] text-primary">Classificação</div>,
         cell: ({ row }) => (
-            <span className="px-2 py-1 bg-slate-800 rounded text-xs text-slate-300">
+            <span className="px-3 py-1 bg-primary text-black border border-white/10 rounded-none text-[9px] uppercase font-black tracking-widest shadow-[2px_2px_0px_rgba(0,0,0,1)]">
                 {row.getValue("category")}
             </span>
         )
     },
     {
+        accessorKey: "flavor_tags",
+        header: () => <div className="text-[10px] uppercase font-bold tracking-[0.2em] text-primary">Atributos</div>,
+        cell: ({ row }) => {
+            const tags = row.getValue("flavor_tags") as string[];
+            if (!tags || tags.length === 0) return <div className="text-[10px] text-white/5 font-mono tracking-widest">—</div>;
+            return (
+                <div className="flex flex-wrap gap-1 max-w-[150px]">
+                    {tags.map((tag, idx) => (
+                        <span key={idx} className="bg-primary/5 border border-primary/20 text-primary text-[8px] font-black uppercase px-2 py-0.5 rounded-none tracking-widest shadow-[1px_1px_0px_rgba(0,0,0,1)]">
+                            {tag}
+                        </span>
+                    ))}
+                </div>
+            )
+        }
+    },
+    {
+        accessorKey: "stock",
+        header: () => <div className="text-[10px] uppercase font-bold tracking-[0.2em] text-primary text-center">Status</div>,
+        cell: ({ row }) => {
+            const isStock = row.getValue("stock");
+            return (
+                <div className="flex justify-center">
+                    <div className={`flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.15em] ${isStock ? "text-primary" : "text-red-500"}`}>
+                        <div className={`w-1.5 h-1.5 ${isStock ? "bg-primary" : "bg-red-500"} shadow-[0_0_8px_rgba(190,242,100,0.5)]`}></div>
+                        {isStock ? "ESTOQUE_OK" : "CRITICAL_LOW"}
+                    </div>
+                </div>
+            )
+        }
+    },
+    {
         accessorKey: "price",
-        header: () => <div className="text-right">Preço</div>,
+        header: () => <div className="text-right text-[10px] uppercase font-bold tracking-[0.2em] text-primary">Valor Unitário</div>,
         cell: ({ row }) => {
             const amount = parseFloat(row.getValue("price"));
             const formatted = new Intl.NumberFormat("pt-BR", {
@@ -74,34 +109,32 @@ export const getColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Produc
                 currency: "BRL",
             }).format(amount);
 
-            return <div className="text-right font-medium text-emerald-400">{formatted}</div>;
+            return <div className="text-right font-black text-primary tracking-tighter text-sm font-mono">{formatted}</div>;
         },
     },
     {
-        accessorKey: "stock",
-        header: "Estoque",
-        cell: ({ row }) => {
-            const isStock = row.getValue("stock");
-            return (
-                <div className={`flex items-center gap-2 ${isStock ? "text-green-500" : "text-red-500"}`}>
-                    <span className={`w-2 h-2 rounded-full ${isStock ? "bg-green-500" : "bg-red-500"}`}></span>
-                    {isStock ? "Sim" : "Não"}
-                </div>
-            )
-        }
-    },
-    {
         id: "actions",
+        header: () => <div className="text-center text-[10px] uppercase font-bold tracking-[0.2em] text-primary">Ações</div>,
         cell: ({ row }) => {
             const product = row.original;
 
             return (
-                <div className="flex justify-end">
-                    <Button variant="ghost" size="icon" onClick={() => onEdit(product)}>
-                        <Pencil className="w-4 h-4 text-slate-400 hover:text-white" />
+                <div className="flex justify-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => onEdit(product)}
+                        className="w-8 h-8 rounded-none border-2 border-white/10 bg-black hover:bg-primary hover:text-black hover:border-primary transition-all group"
+                    >
+                        <Pencil className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => onDelete(product.id)}>
-                        <Trash className="w-4 h-4 text-red-500/50 hover:text-red-500" />
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => onDelete(product.id)}
+                        className="w-8 h-8 rounded-none border-2 border-white/10 bg-black hover:bg-red-600 hover:text-white hover:border-red-600 transition-all group"
+                    >
+                        <Trash className="w-3.5 h-3.5 group-hover:scale-110 transition-transform text-red-500 group-hover:text-white" />
                     </Button>
                 </div>
             );

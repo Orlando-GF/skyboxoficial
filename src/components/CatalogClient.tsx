@@ -7,7 +7,7 @@ import { Product } from "@/types";
 import { CATEGORIES, ITEMS_PER_PAGE } from "@/constants";
 
 interface CatalogClientProps {
-    initialProducts: any[];
+    initialProducts: Product[];
 }
 
 export default function CatalogClient({ initialProducts }: CatalogClientProps) {
@@ -15,10 +15,6 @@ export default function CatalogClient({ initialProducts }: CatalogClientProps) {
     const [searchQuery, setSearchQuery] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
 
-    // Reset to page 1 when filters change
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [selectedCategory, searchQuery, setCurrentPage]);
 
     // Map products to ensure correct type types
     const products: Product[] = initialProducts.map(p => ({
@@ -28,8 +24,11 @@ export default function CatalogClient({ initialProducts }: CatalogClientProps) {
 
     const filteredProducts = products.filter(product => {
         const matchesCategory = selectedCategory === "Todos" || product.category === selectedCategory;
-        const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesCategory && matchesSearch;
+        const searchTerm = searchQuery.toLowerCase();
+        const matchesName = product.name.toLowerCase().includes(searchTerm);
+        const matchesTags = product.flavor_tags?.some(tag => tag.toLowerCase().includes(searchTerm)) || false;
+
+        return matchesCategory && (matchesName || matchesTags);
     });
 
     // Pagination Logic
@@ -41,18 +40,22 @@ export default function CatalogClient({ initialProducts }: CatalogClientProps) {
         <div className="container mx-auto px-4 py-8" suppressHydrationWarning>
             {/* Header & Controls */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
-                <h1 className="text-4xl font-display font-bold text-white">
-                    <span className="text-primary">CATÁLOGO</span> SKYBOX
+                <h1 className="text-6xl font-display font-bold text-white uppercase tracking-tighter leading-none">
+                    SKYBOX<br />
+                    <span className="text-primary italic">SYSTEM_STORE</span>
                 </h1>
 
                 <div className="relative w-full md:w-96">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
                     <input
                         type="text"
-                        placeholder="Buscar produtos..."
+                        placeholder="BUSCAR PROTOCOLO..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-full py-3 pl-12 pr-6 text-white outline-none focus:border-primary transition-colors"
+                        onChange={(e) => {
+                            setSearchQuery(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                        className="w-full bg-black border-2 border-white/10 py-4 pl-12 pr-6 text-white outline-none focus:border-primary transition-all uppercase text-xs tracking-widest"
                     />
                 </div>
             </div>
@@ -66,10 +69,13 @@ export default function CatalogClient({ initialProducts }: CatalogClientProps) {
                 {CATEGORIES.map(category => (
                     <button
                         key={category}
-                        onClick={() => setSelectedCategory(category)}
-                        className={`px-6 py-2 rounded-full font-bold transition-all ${selectedCategory === category
-                            ? "bg-primary text-white shadow-[0_0_15px_rgba(255,0,127,0.5)]"
-                            : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white"
+                        onClick={() => {
+                            setSelectedCategory(category);
+                            setCurrentPage(1);
+                        }}
+                        className={`px-8 py-3 font-bold border-2 transition-all uppercase tracking-widest text-[10px] ${selectedCategory === category
+                            ? "bg-primary border-primary text-black"
+                            : "bg-transparent border-white/10 text-primary/60 hover:border-white hover:text-white"
                             }`}
                     >
                         {category}
@@ -92,7 +98,7 @@ export default function CatalogClient({ initialProducts }: CatalogClientProps) {
                             <button
                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                 disabled={currentPage === 1}
-                                className="p-2 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                                className="p-3 bg-black border-2 border-white/10 text-primary/40 hover:border-primary hover:text-primary disabled:opacity-20 disabled:cursor-not-allowed transition-all"
                             >
                                 <ChevronLeft size={20} />
                             </button>
@@ -101,19 +107,19 @@ export default function CatalogClient({ initialProducts }: CatalogClientProps) {
                                 <button
                                     key={page}
                                     onClick={() => setCurrentPage(page)}
-                                    className={`w-10 h-10 rounded-lg font-bold border transition-all ${currentPage === page
-                                        ? "bg-primary border-primary text-white shadow-[0_0_15px_rgba(255,0,127,0.4)]"
-                                        : "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10 hover:text-white"
+                                    className={`w-12 h-12 font-bold border-2 transition-all text-xs ${currentPage === page
+                                        ? "bg-primary border-primary text-black"
+                                        : "bg-black border-white/10 text-primary/40 hover:border-white hover:text-white"
                                         }`}
                                 >
-                                    {page}
+                                    {page.toString().padStart(2, '0')}
                                 </button>
                             ))}
 
                             <button
                                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                 disabled={currentPage === totalPages}
-                                className="p-2 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                                className="p-3 bg-black border-2 border-white/10 text-primary/40 hover:border-primary hover:text-primary disabled:opacity-20 disabled:cursor-not-allowed transition-all"
                             >
                                 <ChevronRight size={20} />
                             </button>
@@ -122,7 +128,7 @@ export default function CatalogClient({ initialProducts }: CatalogClientProps) {
                 </>
             ) : (
                 <div className="text-center py-20">
-                    <p className="text-slate-500 text-lg">Nenhum produto encontrado.</p>
+                    <p className="text-primary/40 text-[10px] font-bold uppercase tracking-widest">Nenhum protocolo encontrado.</p>
                 </div>
             )}
         </div>

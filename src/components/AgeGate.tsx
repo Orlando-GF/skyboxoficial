@@ -2,17 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldCheck, Cloud } from "lucide-react";
+import { Cloud } from "lucide-react";
 import { STORAGE_KEYS } from "@/constants";
 
 export default function AgeGate() {
     const [showGate, setShowGate] = useState(false);
-    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
         const isVerified = localStorage.getItem(STORAGE_KEYS.AGE_VERIFIED);
         if (isVerified !== "true") {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setShowGate(true);
         }
     }, []);
@@ -35,12 +34,12 @@ export default function AgeGate() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xl p-4"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black p-4"
                 >
                     <motion.div
-                        initial={{ scale: 0.9, y: 20 }}
+                        initial={{ scale: 0.9, y: 0 }}
                         animate={{ scale: 1, y: 0 }}
-                        className="w-full max-w-md bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 text-center shadow-2xl relative overflow-y-auto max-h-[90vh] no-scrollbar"
+                        className="w-full max-w-md bg-black border-2 border-primary p-8 md:p-12 text-center relative overflow-y-auto max-h-[90vh] no-scrollbar"
                     >
                         <style jsx>{`
                             .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -49,38 +48,38 @@ export default function AgeGate() {
                         {/* Background Glow */}
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-primary/20 blur-[100px] rounded-full" />
 
-                        <div className="relative z-10 flex flex-col items-center gap-6">
+                        <div className="relative z-10 flex flex-col items-center gap-10">
                             <div className="relative">
-                                <Cloud className="w-16 h-16 text-secondary animate-pulse" />
-                                <ShieldCheck className="w-8 h-8 text-primary absolute -bottom-2 -right-2 bg-black rounded-full p-1" />
+                                <Cloud className="w-16 h-16 text-primary" />
+                                <div className="absolute -bottom-2 -right-2 bg-primary text-black p-2 font-black text-xs">18+</div>
                             </div>
 
                             <div>
-                                <h1 className="text-3xl font-display font-bold text-white mb-2 tracking-wider">
+                                <h1 className="text-5xl font-display font-bold text-white mb-2 tracking-tighter uppercase">
                                     SKYBOX
                                 </h1>
-                                <p className="text-gray-300 text-sm font-medium tracking-wide">
-                                    ACESSO RESTRITO PARA MAIORES DE 18 ANOS
+                                <p className="text-primary text-[10px] font-bold tracking-[0.2em] uppercase">
+                                    VERIFICAÇÃO DE PROTOCOLO OBRIGATÓRIA
                                 </p>
                             </div>
 
-                            <div className="flex flex-col gap-3 w-full">
+                            <div className="flex flex-col gap-4 w-full">
                                 <button
                                     onClick={handleVerify}
-                                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-xl transition-all active:scale-95 shadow-[0_0_20px_rgba(255,0,127,0.3)] hover:shadow-[0_0_30px_rgba(255,0,127,0.5)]"
+                                    className="w-full bg-primary text-black font-black py-4 px-8 hover:bg-white transition-all uppercase tracking-widest text-xs"
                                 >
-                                    SIM, SOU MAIOR DE 18
+                                    AUTORIZAR ACESSO
                                 </button>
                                 <button
                                     onClick={handleReject}
-                                    className="w-full bg-transparent border border-white/10 hover:bg-white/5 text-gray-400 hover:text-white font-medium py-3 px-6 rounded-xl transition-all active:scale-95"
+                                    className="w-full bg-transparent border-2 border-white/20 hover:border-white text-white font-bold py-4 px-8 transition-all uppercase tracking-widest text-xs"
                                 >
-                                    NÃO, SOU MENOR
+                                    ABORTAR SISTEMA
                                 </button>
                             </div>
 
-                            <p className="text-xs text-gray-500 mt-4">
-                                Ao entrar, você concorda com nossos <a href="/termos" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">termos</a>.
+                            <p className="text-[10px] text-primary/40 font-bold uppercase tracking-widest mt-4">
+                                Ao entrar, você concorda com nossos <a href="/termos" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">termos de acesso</a>.
                             </p>
                         </div>
                     </motion.div>

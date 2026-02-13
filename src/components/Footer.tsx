@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Instagram, Facebook, MapPin, Clock, Phone } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
+import { LINKS } from "@/constants";
 
 export default async function Footer() {
     const supabase = await createClient();
@@ -22,45 +23,45 @@ export default async function Footer() {
     };
 
     return (
-        <footer className="bg-background/80 backdrop-blur-xl border-t border-white/10 pt-16 pb-8" suppressHydrationWarning>
+        <footer className="relative z-50 bg-black border-t-2 border-primary/20 pt-20 pb-12" suppressHydrationWarning>
             <div className="container mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
 
                     {/* Brand & Socials */}
                     <div className="flex flex-col items-center md:items-start text-center md:text-left">
-                        <h2 className="text-3xl font-display font-bold text-white mb-4">{store.name}</h2>
-                        <p className="text-slate-300 text-sm max-w-xs mb-6">
+                        <h2 className="text-2xl font-display font-bold text-white mb-4 uppercase tracking-tight">{store.name}</h2>
+                        <p className="text-primary/40 text-[10px] font-bold uppercase tracking-[0.2em] max-w-xs mb-6 leading-relaxed">
                             A melhor experiência em tabacaria da região.
                             Produtos premium e atendimento exclusivo.
                         </p>
-                        <div className="flex gap-4">
-                            <a href={store.instagram} target="_blank" rel="noopener noreferrer" className="bg-white/5 p-3 rounded-full hover:bg-gradient-to-br hover:from-[#833ab4] hover:via-[#fd1d1d] hover:to-[#fcb045] hover:text-white transition-colors text-slate-400">
+                        <div className="flex gap-2">
+                            <a href={store.instagram} target="_blank" rel="noopener noreferrer" className="bg-black border border-white/5 hover:bg-primary hover:text-black transition-all text-primary/40 hover:border-primary p-4">
                                 <Instagram className="w-5 h-5" />
                             </a>
-                            <a href={store.facebook} target="_blank" rel="noopener noreferrer" className="bg-white/5 p-3 rounded-full hover:bg-blue-600 hover:text-white transition-colors text-slate-400">
+                            <a href={store.facebook} target="_blank" rel="noopener noreferrer" className="bg-black border border-white/5 hover:bg-primary hover:text-black transition-all text-primary/40 hover:border-primary p-4">
                                 <Facebook className="w-5 h-5" />
                             </a>
-                            <a href={`https://wa.me/${store.whatsapp}`} target="_blank" rel="noopener noreferrer" className="bg-white/5 p-3 rounded-full hover:bg-green-500 hover:text-white transition-colors text-slate-400">
+                            <a href={`${LINKS.WHATSAPP_BASE}${store.whatsapp}`} target="_blank" rel="noopener noreferrer" className="bg-black border border-white/5 hover:bg-primary hover:text-black transition-all text-primary/40 hover:border-primary p-4">
                                 <Phone className="w-5 h-5" />
                             </a>
                         </div>
                     </div>
 
                     {/* Location */}
-                    <div className="flex flex-col items-center text-center md:text-left">
+                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
                         <div className="md:w-auto">
-                            <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2 justify-center md:justify-start">
+                            <h3 className="text-xl font-display font-bold text-white mb-4 flex items-center gap-2 justify-center md:justify-start uppercase tracking-tight">
                                 <MapPin className="w-5 h-5 text-primary" />
                                 Localização
                             </h3>
-                            <p className="text-slate-300 text-sm mb-4 max-w-xs">
+                            <p className="text-primary/60 text-[10px] mb-4 max-w-xs font-bold uppercase tracking-[0.2em] leading-relaxed">
                                 {store.address}
                             </p>
                             <a
                                 href={store.maps}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-primary text-sm hover:underline"
+                                className="text-primary text-[10px] hover:underline font-bold uppercase tracking-widest"
                             >
                                 Ver no Google Maps &rarr;
                             </a>
@@ -68,22 +69,22 @@ export default async function Footer() {
                     </div>
 
                     {/* Hours */}
-                    <div className="flex flex-col items-center md:items-end text-center md:text-left">
+                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
                         <div className="md:w-auto">
-                            <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2 justify-center md:justify-start">
+                            <h3 className="text-xl font-display font-bold text-white mb-4 flex items-center gap-2 justify-center md:justify-start uppercase tracking-tight">
                                 <Clock className="w-5 h-5 text-primary" />
                                 Horários
                             </h3>
-                            <ul className="text-slate-300 text-sm space-y-2">
-                                <li className="flex justify-between gap-12 min-w-[12rem]">
+                            <ul className="text-primary/60 text-[10px] space-y-2 font-bold uppercase tracking-[0.2em] leading-relaxed">
+                                <li className="flex justify-between gap-8 min-w-[12rem]">
                                     <span>{store.hours.weekdays.label}</span>
                                     <span className="text-white">{store.hours.weekdays.time}</span>
                                 </li>
-                                <li className="flex justify-between gap-12 min-w-[12rem]">
+                                <li className="flex justify-between gap-8 min-w-[12rem]">
                                     <span>{store.hours.saturday.label}</span>
                                     <span className="text-white">{store.hours.saturday.time}</span>
                                 </li>
-                                <li className="flex justify-between gap-12 min-w-[12rem]">
+                                <li className="flex justify-between gap-8 min-w-[12rem]">
                                     <span>{store.hours.sunday.label}</span>
                                     <span className="text-white">{store.hours.sunday.time}</span>
                                 </li>
@@ -94,15 +95,15 @@ export default async function Footer() {
                 </div>
 
                 <div className="border-t border-white/5 pt-8 text-center flex flex-col items-center gap-2">
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-primary/40 font-bold uppercase tracking-wider">
                         © 2026 {store.name}. Todos os direitos reservados.
                         {config?.cnpj && <span className="block mt-1">CNPJ: {config.cnpj}</span>}
                     </p>
                     <div className="flex gap-4 justify-center">
-                        <Link href="/termos" target="_blank" rel="noopener noreferrer" className="text-[10px] text-slate-700 hover:text-primary transition-colors">
+                        <Link href="/termos" target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary/40 hover:text-primary transition-colors uppercase tracking-wider font-bold">
                             Termos de Uso
                         </Link>
-                        <Link href="/login" target="_blank" rel="noopener noreferrer" className="text-[10px] text-slate-700 hover:text-primary transition-colors">
+                        <Link href="/login" target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary/40 hover:text-primary transition-colors uppercase tracking-wider font-bold">
                             Área Administrativa
                         </Link>
                     </div>
