@@ -22,7 +22,7 @@ export default async function Footer() {
     };
 
     return (
-        <footer className="bg-black/80 backdrop-blur-md border-t border-white/10 pt-16 pb-8" suppressHydrationWarning>
+        <footer className="bg-background/80 backdrop-blur-xl border-t border-white/10 pt-16 pb-8" suppressHydrationWarning>
             <div className="container mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
 
@@ -47,44 +47,48 @@ export default async function Footer() {
                     </div>
 
                     {/* Location */}
-                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
-                        <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-                            <MapPin className="w-5 h-5 text-primary" />
-                            Localização
-                        </h3>
-                        <p className="text-slate-300 text-sm mb-4 max-w-xs">
-                            {store.address}
-                        </p>
-                        <a
-                            href={store.maps}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary text-sm hover:underline"
-                        >
-                            Ver no Google Maps &rarr;
-                        </a>
+                    <div className="flex flex-col items-center text-center md:text-left">
+                        <div className="md:w-auto">
+                            <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2 justify-center md:justify-start">
+                                <MapPin className="w-5 h-5 text-primary" />
+                                Localização
+                            </h3>
+                            <p className="text-slate-300 text-sm mb-4 max-w-xs">
+                                {store.address}
+                            </p>
+                            <a
+                                href={store.maps}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary text-sm hover:underline"
+                            >
+                                Ver no Google Maps &rarr;
+                            </a>
+                        </div>
                     </div>
 
                     {/* Hours */}
-                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
-                        <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-                            <Clock className="w-5 h-5 text-primary" />
-                            Horários
-                        </h3>
-                        <ul className="text-slate-300 text-sm space-y-2">
-                            <li className="flex justify-between w-48">
-                                <span>{store.hours.weekdays.label}</span>
-                                <span className="text-white">{store.hours.weekdays.time}</span>
-                            </li>
-                            <li className="flex justify-between w-48">
-                                <span>{store.hours.saturday.label}</span>
-                                <span className="text-white">{store.hours.saturday.time}</span>
-                            </li>
-                            <li className="flex justify-between w-48">
-                                <span>{store.hours.sunday.label}</span>
-                                <span className="text-white">{store.hours.sunday.time}</span>
-                            </li>
-                        </ul>
+                    <div className="flex flex-col items-center md:items-end text-center md:text-left">
+                        <div className="md:w-auto">
+                            <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2 justify-center md:justify-start">
+                                <Clock className="w-5 h-5 text-primary" />
+                                Horários
+                            </h3>
+                            <ul className="text-slate-300 text-sm space-y-2">
+                                <li className="flex justify-between gap-12 min-w-[12rem]">
+                                    <span>{store.hours.weekdays.label}</span>
+                                    <span className="text-white">{store.hours.weekdays.time}</span>
+                                </li>
+                                <li className="flex justify-between gap-12 min-w-[12rem]">
+                                    <span>{store.hours.saturday.label}</span>
+                                    <span className="text-white">{store.hours.saturday.time}</span>
+                                </li>
+                                <li className="flex justify-between gap-12 min-w-[12rem]">
+                                    <span>{store.hours.sunday.label}</span>
+                                    <span className="text-white">{store.hours.sunday.time}</span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
 
                 </div>

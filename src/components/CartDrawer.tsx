@@ -49,7 +49,7 @@ export default function CartDrawer() {
                         animate={{ x: 0 }}
                         exit={{ x: "100%" }}
                         transition={{ type: "spring", damping: 20, stiffness: 100 }}
-                        className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-[#050510] border-l border-white/10 shadow-2xl flex flex-col"
+                        className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-card/60 backdrop-blur-2xl border-l border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col"
                     >
                         <div className="p-6 border-b border-white/10 flex items-center justify-between">
                             <h2 className="text-2xl font-display font-bold text-white">Seu Kit</h2>

@@ -10,6 +10,21 @@ import { toast } from "sonner";
 import { Loader2, Link as LinkIcon, Copy, Check } from "lucide-react";
 import { formatCNPJ, validateCNPJ } from "@/utils/format";
 
+const DEFAULT_TERMS = `1. Aceitação dos Termos
+Ao acessar e usar este site, você declara ter conhecimento e concordar com os estes termos. O acesso é estritamente proibido para menores de 18 anos. A Tabacaria Skybox se reserva o direito de solicitar comprovação de idade a qualquer momento.
+
+2. Produtos Restritos
+Todos os produtos comercializados neste site são destinados exclusivamente a adultos. É crime vender, fornecer, servir, ministrar ou entregar, ainda que gratuitamente, de qualquer forma, a criança ou a adolescente, produtos cujos componentes possam causar dependência física ou psíquica.
+
+3. Política de Privacidade
+Respeitamos sua privacidade. Seus dados pessoais serão utilizados apenas para processar seus pedidos e melhorar sua experiência no site. Não vendemos nem compartilhamos seus dados com terceiros para fins de marketing não autorizado.
+
+4. Política de Entrega e Devolução
+Prazos de entrega são estimados e podem variar. Em caso de arrependimento, o consumidor tem o prazo de 7 dias a contar do recebimento do produto para solicitar a devolução, conforme o Código de Defesa do Consumidor, desde que o produto esteja lacrado e sem uso.
+
+5. Alterações
+A Tabacaria Skybox reserva-se o direito de alterar estes termos a qualquer momento, sem aviso prévio. Recomendamos a revisão periódica desta página.`;
+
 export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -42,7 +57,14 @@ export default function SettingsPage() {
             console.error(error);
             toast.error("Erro ao carregar configurações.");
         } else {
-            setConfig(data);
+            // If terms_content is empty, pre-fill with default for editing
+            const updatedData = {
+                ...data,
+                terms_content: (data.terms_content && data.terms_content.trim().length > 0)
+                    ? data.terms_content
+                    : DEFAULT_TERMS
+            };
+            setConfig(updatedData);
         }
         setLoading(false);
     };

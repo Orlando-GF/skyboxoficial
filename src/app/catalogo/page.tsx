@@ -9,7 +9,7 @@ export default async function CatalogPage() {
     const { data: products } = await supabase.from("products").select("*").order('created_at', { ascending: false });
 
     return (
-        <main className="min-h-screen pt-24 pb-20 relative bg-[#050510]">
+        <main className="min-h-screen pt-24 pb-20 relative bg-background">
             {/* Background */}
             <div className="fixed inset-0 z-0 bg-[url('https://images.unsplash.com/photo-1618331835717-801e976710b2?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center opacity-10 pointer-events-none" />
 
