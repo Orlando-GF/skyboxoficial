@@ -16,6 +16,7 @@ interface DashboardProps {
         outOfStock: number;
         mostDesired: string;
         campaignLeads: number;
+        conversionRate: number;
     };
     chartData: Array<{ hour: string; clicks: number }>;
 }
@@ -80,6 +81,12 @@ export default function DashboardClient({ metrics, chartData }: DashboardProps) 
                     value={metrics.campaignLeads}
                     description="Acessos via Links Rastreados"
                     icon={<Target className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />}
+                />
+                <MetricCard
+                    title="Taxa de Conversão"
+                    value={`${metrics.conversionRate}%`}
+                    description="Cliques / Visitantes"
+                    icon={<TrendingUp className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />}
                 />
             </div>
 

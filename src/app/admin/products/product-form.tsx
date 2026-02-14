@@ -23,10 +23,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect } from "react";
-import { Badge } from "@/components/ui/badge";
-import { X, Upload, Loader2, Image as ImageIcon } from "lucide-react";
+import { TagInput } from "@/components/ui/tag-input";
+import { X, Upload, Loader2, Image as ImageIcon, Search, Plus } from "lucide-react";
+import { toTitleCase } from "@/lib/utils";
 
 interface ProductFormProps {
     initialData?: Partial<ProductFormValues>;
@@ -41,6 +43,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
         defaultValues: {
             name: initialData?.name || "",
             price: initialData?.price || 0,
+            original_price: initialData?.original_price || 0,
             category: initialData?.category || "Essências",
             image: initialData?.image || "",
             stock: initialData?.stock !== undefined ? initialData.stock : true,
@@ -49,287 +52,89 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
             seo_description: initialData?.seo_description || "",
             description: initialData?.description || "",
             is_kit: initialData?.is_kit !== undefined ? initialData.is_kit : false,
+            kit_items: initialData?.kit_items || [],
             featured: initialData?.featured !== undefined ? initialData.featured : false,
         },
     });
 
-    const [tagInput, setTagInput] = useState("");
+    const [availableProducts, setAvailableProducts] = useState<{ id: string; name: string; price: number }[]>([]);
     const [allTags, setAllTags] = useState<string[]>([]);
+    const [itemSearch, setItemSearch] = useState("");
     const [isUploading, setIsUploading] = useState(false);
     const supabase = createClient();
 
     useEffect(() => {
-        const fetchTags = async () => {
-            const { data } = await supabase.from("products").select("flavor_tags");
-            if (data) {
+        const fetchData = async () => {
+            // Fetch Tags for Autocomplete
+            const { data: tagsData } = await supabase.from("products").select("flavor_tags");
+            if (tagsData) {
                 const uniqueTags = new Set<string>();
-                data.forEach(p => {
+                tagsData.forEach(p => {
                     p.flavor_tags?.forEach((tag: string) => uniqueTags.add(tag));
                 });
                 setAllTags(Array.from(uniqueTags).sort());
             }
+
+            // Fetch Products for Kit Composition
+            const { data: productsData } = await supabase.from("products").select("id, name, price").order('name');
+            if (productsData) {
+                setAvailableProducts(productsData);
+            }
         };
-        fetchTags();
+        fetchData();
     }, [supabase]);
-
-    const addTag = (tag: string) => {
-        const currentTags = form.getValues("flavor_tags") || [];
-        if (!currentTags.includes(tag.trim())) {
-            form.setValue("flavor_tags", [...currentTags, tag.trim()]);
-        }
-    };
-
-    const removeTag = (tag: string) => {
-        const currentTags = form.getValues("flavor_tags") || [];
-        form.setValue("flavor_tags", currentTags.filter((t) => t !== tag));
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter" && tagInput.trim()) {
-            e.preventDefault();
-            addTag(tagInput);
-            setTagInput("");
-        }
-    };
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-12 gap-8 h-full">
+                {/* Left Sidebar - Meta & Status (Cols 4) */}
+                <div className="col-span-12 md:col-span-4 space-y-6 border-r-2 border-white/5 pr-8 h-full">
+
+                    {/* Image Upload - Prominent */}
                     <FormField
                         control={form.control}
-                        name="name"
+                        name="image"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Nomenclatura do Produto</FormLabel>
+                                <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Documentação Visual</FormLabel>
                                 <FormControl>
-                                    <Input
-                                        placeholder="EX: ESSÊNCIA ZOMO STRONG MINT"
-                                        {...field}
-                                        className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all uppercase text-xs tracking-widest"
-                                    />
-                                </FormControl>
-                                <FormMessage className="text-[10px] uppercase font-bold tracking-tighter" />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="price"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Valor de Crédito (R$)</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all text-sm font-mono"
-                                        placeholder="R$ 0,00"
-                                        value={field.value ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(field.value) : ""}
-                                        onChange={(e) => {
-                                            const value = e.target.value.replace(/\D/g, "");
-                                            const numberValue = Number(value) / 100;
-                                            field.onChange(numberValue);
-                                        }}
-                                    />
-                                </FormControl>
-                                <FormMessage className="text-[10px] uppercase font-bold tracking-tighter" />
-                            </FormItem>
-                        )}
-                    />
-                </div>
-
-                <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Resumo de Vitrine (Tática)</FormLabel>
-                            <FormControl>
-                                <Input
-                                    placeholder="BREVE DESCRIÇÃO TÉCNICA..."
-                                    {...field}
-                                    className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all text-xs"
-                                />
-                            </FormControl>
-                            <FormDescription className="text-[9px] uppercase font-bold tracking-widest text-white/20">
-                                Visível abaixo do identificador na página principal.
-                            </FormDescription>
-                            <FormMessage className="text-[10px] uppercase font-bold tracking-tighter" />
-                        </FormItem>
-                    )}
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                        control={form.control}
-                        name="category"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Classificação de Inventário</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all text-xs uppercase tracking-widest">
-                                            <SelectValue placeholder="SELECIONE..." />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent className="bg-black border-2 border-white/10 text-white rounded-none">
-                                        <SelectItem value="Kits" className="hover:bg-primary hover:text-black transition-colors uppercase text-[10px] font-bold tracking-widest cursor-pointer">Kits</SelectItem>
-                                        <SelectItem value="Essências" className="hover:bg-primary hover:text-black transition-colors uppercase text-[10px] font-bold tracking-widest cursor-pointer">Essências</SelectItem>
-                                        <SelectItem value="Carvão" className="hover:bg-primary hover:text-black transition-colors uppercase text-[10px] font-bold tracking-widest cursor-pointer">Carvão</SelectItem>
-                                        <SelectItem value="Acessórios" className="hover:bg-primary hover:text-black transition-colors uppercase text-[10px] font-bold tracking-widest cursor-pointer">Acessórios</SelectItem>
-                                        <SelectItem value="Narguiles" className="hover:bg-primary hover:text-black transition-colors uppercase text-[10px] font-bold tracking-widest cursor-pointer">Narguiles</SelectItem>
-                                        <SelectItem value="Pod Descartável" className="hover:bg-primary hover:text-black transition-colors uppercase text-[10px] font-bold tracking-widest cursor-pointer">Pod Descartável</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage className="text-[10px] uppercase font-bold tracking-tighter" />
-                            </FormItem>
-                        )}
-                    />
-
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                        control={form.control}
-                        name="stock"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-none border-2 border-white/5 p-6 bg-black group hover:border-primary/30 transition-all">
-                                <div className="space-y-1">
-                                    <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-white">Disponibilidade</FormLabel>
-                                    <FormDescription className="text-[9px] uppercase font-bold tracking-widest text-slate-500">
-                                        Status de Estoque Imediato
-                                    </FormDescription>
-                                </div>
-                                <FormControl>
-                                    <Switch
-                                        className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-slate-800"
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                    />
-                                </FormControl>
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="featured"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-none border-2 border-primary/20 p-6 bg-primary/5 group hover:border-primary/50 transition-all">
-                                <div className="space-y-1">
-                                    <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-primary">Protocolo Destaque ⚡</FormLabel>
-                                    <FormDescription className="text-[9px] uppercase font-bold tracking-widest text-primary/40">
-                                        Exposição Premium na Home
-                                    </FormDescription>
-                                </div>
-                                <FormControl>
-                                    <Switch
-                                        className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-primary/20"
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                    />
-                                </FormControl>
-                            </FormItem>
-                        )}
-                    />
-                </div>
-
-                {/* Tags Section */}
-                <div className="space-y-3">
-                    <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Atributos & Tags (Filtros)</FormLabel>
-                    <Input
-                        placeholder="DIGITE E APERTE ENTER (EX: MENTOLADO, DOCE)"
-                        value={tagInput}
-                        onChange={(e) => setTagInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all uppercase text-[10px] font-bold tracking-widest"
-                    />
-
-                    {/* Suggested Tags (Library) */}
-                    {allTags.length > 0 && (
-                        <div className="space-y-2 mt-4">
-                            <span className="text-[8px] uppercase font-bold tracking-[0.3em] text-white/40">Vocabulário de Sabores Registrados:</span>
-                            <div className="flex flex-wrap gap-1.5 opacity-60 hover:opacity-100 transition-opacity max-h-24 overflow-y-auto no-scrollbar border-l-2 border-white/5 pl-4 py-1">
-                                {allTags.map((tag) => (
-                                    <button
-                                        key={tag}
-                                        type="button"
-                                        onClick={() => addTag(tag)}
-                                        className="text-[9px] uppercase font-bold tracking-widest text-slate-400 border border-white/10 px-2 py-1 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all"
-                                    >
-                                        + {tag}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="flex flex-wrap gap-2 mt-6">
-                        {form.watch("flavor_tags")?.map((tag, index) => (
-                            <div key={index} className="bg-primary text-black font-black px-4 py-2 rounded-none text-[9px] uppercase flex items-center gap-2 tracking-widest border border-white/10 shadow-[2px_2px_0px_#000]">
-                                {tag}
-                                <button type="button" onClick={() => removeTag(tag)} className="hover:text-red-600 transition-colors"><X size={10} strokeWidth={4} /></button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <FormField
-                    control={form.control}
-                    name="image"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Documentação Visual (PNG/JPG)</FormLabel>
-                            <FormControl>
-                                <div className="space-y-4">
-                                    {field.value ? (
-                                        <div className="relative aspect-video w-full rounded-none overflow-hidden border-2 border-white/10 bg-black group">
-                                            <img
-                                                src={field.value}
-                                                alt="Preview"
-                                                className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 ease-in-out"
-                                            />
-                                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                                                <Button
-                                                    type="button"
-                                                    variant="destructive"
-                                                    size="sm"
-                                                    className="rounded-none border-2 border-white/20 bg-black hover:bg-red-600 text-white transition-all uppercase text-[10px] font-black h-12 px-8 tracking-[0.2em]"
-                                                    onClick={() => field.onChange("")}
-                                                >
-                                                    <X className="w-5 h-5 mr-3" />
-                                                    DELETAR_ARQUIVO
-                                                </Button>
+                                    <div className="space-y-4">
+                                        {field.value ? (
+                                            <div className="relative aspect-square w-full rounded-none overflow-hidden border-2 border-white/10 bg-black group">
+                                                <img
+                                                    src={field.value}
+                                                    alt="Preview"
+                                                    className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 ease-in-out"
+                                                />
+                                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                                                    <Button
+                                                        type="button"
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        className="rounded-none border-2 border-white/20 bg-black hover:bg-red-600 text-white transition-all uppercase text-[10px] font-black h-10 px-4 tracking-[0.2em]"
+                                                        onClick={() => field.onChange("")}
+                                                    >
+                                                        <X className="w-4 h-4 mr-2" />
+                                                        REMOVER
+                                                    </Button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center justify-center w-full">
+                                        ) : (
                                             <label
                                                 htmlFor="image-upload"
-                                                className={`flex flex-col items-center justify-center w-full h-56 border-2 border-dashed rounded-none cursor-pointer transition-all
+                                                className={`flex flex-col items-center justify-center w-full aspect-square border-2 border-dashed rounded-none cursor-pointer transition-all
                                                 ${isUploading ? "border-primary bg-primary/5 animate-pulse" : "border-white/10 bg-black hover:bg-primary/5 hover:border-primary/50"}
                                                 `}
                                             >
                                                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                                     {isUploading ? (
-                                                        <>
-                                                            <Loader2 className="w-10 h-10 mb-4 text-primary animate-spin" />
-                                                            <p className="text-[10px] uppercase font-bold tracking-widest text-primary">UPLOAD_IN_PROGRESS...</p>
-                                                        </>
+                                                        <Loader2 className="w-8 h-8 mb-2 text-primary animate-spin" />
                                                     ) : (
-                                                        <>
-                                                            <div className="bg-white/5 p-4 rounded-none mb-4 border border-white/5">
-                                                                <Upload className="w-8 h-8 text-white/40" />
-                                                            </div>
-                                                            <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-2">
-                                                                <span className="text-primary underline decoration-2 underline-offset-4">LINK_DADOS</span> OU ARRASTE
-                                                            </p>
-                                                            <p className="text-[9px] uppercase font-bold tracking-[0.2em] text-slate-600 text-center leading-relaxed">
-                                                                TARGET: 800x800px // FORMAT: PNG/WEBP<br />
-                                                                CAPACITY_LIMIT: 5.0MB
-                                                            </p>
-                                                        </>
+                                                        <Upload className="w-8 h-8 text-white/40 mb-2" />
                                                     )}
+                                                    <p className="text-[9px] uppercase font-bold tracking-widest text-slate-500">
+                                                        UPLOAD_IMG
+                                                    </p>
                                                 </div>
                                                 <Input id="image-upload" type="file" accept="image/*" className="hidden" disabled={isUploading} onChange={async (e) => {
                                                     const file = e.target.files?.[0];
@@ -350,62 +155,478 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                                                     }
                                                 }} />
                                             </label>
-                                        </div>
-                                    )}
-                                </div>
-                            </FormControl>
-                            <FormMessage className="text-[10px] uppercase font-bold tracking-tighter" />
-                        </FormItem>
-                    )}
-                />
+                                        )}
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                <div className="border-t-2 border-white/5 pt-10 mt-16 bg-primary/5 -mx-8 px-8 pb-10">
-                    <div className="flex items-center gap-4 mb-8">
-                        <div className="h-0.5 w-12 bg-primary"></div>
-                        <h3 className="text-2xl font-display font-bold text-primary uppercase tracking-tighter">SEO & Metadados G.O. (Central de Dados)</h3>
-                    </div>
-                    <div className="grid grid-cols-1 gap-6">
+                    {/* Status Toggles */}
+                    <div className="space-y-4 pt-4 border-t border-white/5">
                         <FormField
                             control={form.control}
-                            name="seo_title"
+                            name="stock"
                             render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Target: Meta_Title (Google_Sync)</FormLabel>
+                                <FormItem className="flex flex-row items-center justify-between rounded-none border border-white/10 p-4 bg-black/50">
+                                    <div className="space-y-0.5">
+                                        <FormLabel className="text-[9px] uppercase font-bold tracking-[0.2em] text-white">Em Estoque</FormLabel>
+                                    </div>
                                     <FormControl>
-                                        <Input
-                                            placeholder="TÍTULO OTIMIZADO PARA INDEXAÇÃO..."
-                                            {...field}
-                                            className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all text-xs uppercase"
-                                        />
+                                        <Switch checked={field.value} onCheckedChange={field.onChange} className="data-[state=checked]:bg-primary" />
                                     </FormControl>
-                                    <FormMessage className="text-[10px] uppercase font-bold tracking-tighter" />
                                 </FormItem>
                             )}
                         />
                         <FormField
                             control={form.control}
-                            name="seo_description"
+                            name="featured"
                             render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Target: Meta_Description (Snippet_Context)</FormLabel>
+                                <FormItem className="flex flex-row items-center justify-between rounded-none border border-primary/20 p-4 bg-primary/5">
+                                    <div className="space-y-0.5">
+                                        <FormLabel className="text-[9px] uppercase font-bold tracking-[0.2em] text-primary">Destaque ⚡</FormLabel>
+                                    </div>
                                     <FormControl>
-                                        <Input
-                                            placeholder="DESCRIÇÃO ESTRATÉGICA PARA ALGORITMOS..."
-                                            {...field}
-                                            className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all text-xs uppercase"
-                                        />
+                                        <Switch checked={field.value} onCheckedChange={field.onChange} className="data-[state=checked]:bg-primary" />
                                     </FormControl>
-                                    <FormMessage className="text-[10px] uppercase font-bold tracking-tighter" />
                                 </FormItem>
                             )}
                         />
                     </div>
+
+                    <Button type="submit" disabled={isLoading} className="w-full h-14 rounded-none bg-primary text-black font-bold hover:bg-white transition-all uppercase tracking-[0.2em] text-xs mt-auto">
+                        {isLoading ? "Salvando..." : "Confirmar Alterações"}
+                    </Button>
                 </div>
 
-                <Button type="submit" disabled={isLoading} className="w-full h-14 rounded-none bg-primary text-black font-bold hover:bg-white transition-all uppercase tracking-[0.2em] text-sm">
-                    {isLoading ? "Processando..." : "Sincronizar Produto"}
-                </Button>
+                {/* Main Content - Fields & Config (Cols 8) */}
+                <div className="col-span-12 md:col-span-8 space-y-8 pb-8">
+
+                    {/* Header Info */}
+
+                    {/* Category Selection moved to top for better flow */}
+                    <FormField
+                        control={form.control}
+                        name="category"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-primary">1. Tipo de Produto</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger className="bg-black border-2 border-primary/20 text-white rounded-none h-12 focus:border-primary transition-all text-xs uppercase tracking-widest">
+                                            <SelectValue placeholder="SELECIONE..." />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent className="bg-black border-2 border-white/10 text-white rounded-none">
+                                        <SelectItem value="Kits">KITS (COMBOS)</SelectItem>
+                                        <SelectItem value="Essências">ESSÊNCIAS</SelectItem>
+                                        <SelectItem value="Carvão">CARVÃO</SelectItem>
+                                        <SelectItem value="Acessórios">ACESSÓRIOS</SelectItem>
+                                        <SelectItem value="Narguiles">NARGUILES</SelectItem>
+                                        <SelectItem value="Pod Descartável">POD DESCARTÁVEL</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    {/* NON-KITS FLOW */}
+                    {form.watch("category") !== "Kits" && (
+                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Nome do Produto</FormLabel>
+                                        <FormControl>
+                                            <Input {...field} className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all uppercase text-xs tracking-widest" placeholder="EX: ZOMO STRONG" />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                                <FormField
+                                    control={form.control}
+                                    name="original_price"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-2">
+                                            <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500 h-4 block">
+                                                Preço Atual (Sem Desconto)
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all text-sm font-mono placeholder:text-slate-700"
+                                                    placeholder="R$ 0,00"
+                                                    value={typeof field.value === 'number' ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(field.value) : ""}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value.replace(/\D/g, "");
+                                                        const numberValue = Number(value) / 100;
+                                                        field.onChange(numberValue);
+                                                    }}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                            <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-2 leading-relaxed h-[36px]">
+                                                * Para dar desconto, preencha este campo com o preço normal. O "Novo Preço" deve ser menor.
+                                            </p>
+                                            {(field.value || 0) > 0 && (field.value || 0) <= (form.watch("price") || 0) && (
+                                                <p className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest mt-1 animate-pulse">
+                                                    ⚠ Atenção: Para gerar desconto, o "Preço Atual" deve ser MAIOR que o "Novo Preço".
+                                                </p>
+                                            )}
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="price"
+                                    render={({ field }) => {
+                                        const originalPrice = form.watch("original_price") || 0;
+                                        const currentPrice = field.value || 0;
+                                        const discount = originalPrice > currentPrice
+                                            ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
+                                            : 0;
+
+                                        return (
+                                            <FormItem className="space-y-2">
+                                                <div className="flex justify-between items-center h-4">
+                                                    <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500 block">
+                                                        Novo Preço (Com Desconto)
+                                                    </FormLabel>
+                                                    {discount > 0 && (
+                                                        <span className="bg-primary text-black text-[9px] font-black px-1.5 py-0.5 animate-in fade-in zoom-in">
+                                                            {discount}% OFF
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <FormControl>
+                                                    <Input
+                                                        className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all text-sm font-mono placeholder:text-slate-700"
+                                                        placeholder="R$ 0,00"
+                                                        value={field.value ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(field.value) : ""}
+                                                        onChange={(e) => {
+                                                            const value = e.target.value.replace(/\D/g, "");
+                                                            const numberValue = Number(value) / 100;
+                                                            field.onChange(numberValue);
+                                                        }}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        );
+                                    }}
+                                />
+                            </div>
+
+                            <FormField
+                                control={form.control}
+                                name="seo_description"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Descrição Tática (Curta/SEO)</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all text-xs"
+                                                placeholder="Resumo para cards e SEO..."
+                                                value={field.value || ""}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="description"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Descrição Completa</FormLabel>
+                                        <FormControl>
+                                            <Textarea
+                                                {...field}
+                                                className="bg-black border-2 border-white/10 text-white rounded-none min-h-[100px] focus:border-primary transition-all text-xs resize-y"
+                                                placeholder="Detalhes completos do produto..."
+                                                value={field.value || ""}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <div className="grid grid-cols-1 gap-6 items-start">
+                                <FormField
+                                    control={form.control}
+                                    name="flavor_tags"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Tags Rápidas</FormLabel>
+                                            <FormControl>
+                                                <TagInput
+                                                    tags={field.value || []}
+                                                    setTags={field.onChange}
+                                                    suggestions={allTags}
+                                                    placeholder="TAG + ENTER"
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* KITS FLOW */}
+                    {form.watch("category") === "Kits" && (
+                        <div className="space-y-8 animate-in fade-in zoom-in-95 duration-300">
+
+                            {/* 2. Kit Configuration (Selection) - COMES FIRST */}
+                            <div className="border-2 border-primary/20 bg-primary/5 p-6 space-y-6">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-primary font-bold uppercase tracking-widest text-xs">2. Configuração do Smart Kit</span>
+                                    <div className="h-[1px] flex-1 bg-primary/20"></div>
+                                </div>
+
+                                <FormField
+                                    control={form.control}
+                                    name="is_kit"
+                                    render={() => (
+                                        <div className="hidden">
+                                            {/* Force true if kit */}
+                                            <Switch checked={true} onCheckedChange={() => { }} />
+                                        </div>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="kit_items"
+                                    render={({ field }) => {
+                                        // Derived state for filtering
+                                        const currentKitItems = field.value || [];
+                                        const available = availableProducts.filter(p => !currentKitItems.includes(p.id) && p.name.toLowerCase().includes(itemSearch.toLowerCase()));
+                                        const selected = availableProducts.filter(p => currentKitItems.includes(p.id));
+
+                                        // Calculate Totals
+                                        const kitPrice = form.watch("price") || 0;
+                                        const originalTotal = selected.reduce((acc, item) => acc + (item.price || 0), 0);
+                                        const savings = originalTotal > 0 ? originalTotal - kitPrice : 0;
+                                        const savingsPercent = originalTotal > 0 ? ((savings / originalTotal) * 100).toFixed(0) : 0;
+
+                                        return (
+                                            <FormItem>
+                                                {/* Search Input */}
+                                                <div className="relative mb-4">
+                                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                                                    <Input
+                                                        placeholder="BUSCAR ITEM NO ESTOQUE..."
+                                                        value={itemSearch}
+                                                        onChange={(e) => setItemSearch(e.target.value)}
+                                                        className="pl-10 bg-black border-white/10 text-xs uppercase tracking-widest h-10 rounded-none focus:border-primary"
+                                                    />
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {/* Available Items List */}
+                                                    <div className="border border-white/10 bg-black/50 p-2">
+                                                        <div className="text-[8px] uppercase font-bold tracking-[0.2em] text-slate-500 mb-2">Disponíveis</div>
+                                                        <div className="grid grid-cols-1 gap-1 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                                            {available.length === 0 ? (
+                                                                <div className="text-center py-4 text-[9px] text-white/30 uppercase tracking-widest">Nenhum item</div>
+                                                            ) : (
+                                                                available.map((product) => (
+                                                                    <div
+                                                                        key={product.id}
+                                                                        onClick={() => field.onChange([...currentKitItems, product.id])}
+                                                                        className="flex justify-between items-center p-2 hover:bg-white/10 transition-colors cursor-pointer group border border-transparent hover:border-white/10"
+                                                                    >
+                                                                        <span className="text-[9px] text-slate-400 group-hover:text-white uppercase truncate font-medium">{product.name}</span>
+                                                                        <Plus size={10} className="text-primary opacity-0 group-hover:opacity-100" />
+                                                                    </div>
+                                                                ))
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Selected Items List */}
+                                                    <div className="border border-primary/20 bg-primary/5 p-2">
+                                                        <div className="text-[8px] uppercase font-bold tracking-[0.2em] text-primary/80 mb-2">Selecionados ({selected.length})</div>
+                                                        <div className="grid grid-cols-1 gap-1 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                                            {selected.map(product => (
+                                                                <div key={product.id} className="flex justify-between items-center bg-primary/10 border border-primary/30 p-2 group hover:bg-primary/20 transition-colors">
+                                                                    <span className="text-[9px] uppercase font-bold text-primary truncate mr-2">{product.name}</span>
+                                                                    <button type="button" onClick={() => field.onChange(currentKitItems.filter(id => id !== product.id))}>
+                                                                        <X size={12} className="text-primary hover:text-white" />
+                                                                    </button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                        {/* Live Sum */}
+                                                        <div className="mt-2 pt-2 border-t border-primary/20 flex justify-between items-center">
+                                                            <span className="text-[9px] uppercase font-bold tracking-widest text-primary/60">Soma Original</span>
+                                                            <span className="text-xs font-mono font-bold text-primary">
+                                                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(originalTotal)}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* PRICING DASHBOARD inside Kit Config */}
+                                                <div className="mt-6 bg-black/60 border border-white/10 p-4 relative overflow-hidden">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+
+                                                        {/* Price Input */}
+                                                        <FormField
+                                                            control={form.control}
+                                                            name="price"
+                                                            render={({ field: priceField }) => (
+                                                                <FormItem className="flex-1">
+                                                                    <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-primary">3. Preço Final do Kit</FormLabel>
+                                                                    <FormControl>
+                                                                        <Input
+                                                                            className="bg-black border-2 border-primary/30 text-white rounded-none h-12 focus:border-primary transition-all text-lg font-mono font-bold text-right"
+                                                                            placeholder="R$ 0,00"
+                                                                            value={priceField.value ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(priceField.value) : ""}
+                                                                            onChange={(e) => {
+                                                                                const value = e.target.value.replace(/\D/g, "");
+                                                                                const numberValue = Number(value) / 100;
+                                                                                priceField.onChange(numberValue);
+                                                                            }}
+                                                                        />
+                                                                    </FormControl>
+                                                                </FormItem>
+                                                            )}
+                                                        />
+
+
+                                                        {/* Savings Display */}
+                                                        <div className="text-right pb-2">
+                                                            <div className="text-[9px] uppercase font-bold tracking-widest text-slate-500 mb-1">Economia Gerada</div>
+                                                            <div className="text-2xl font-black text-green-500 flex items-center justify-end gap-2">
+                                                                <span>-{savingsPercent}%</span>
+                                                                <span className="text-sm font-mono font-normal text-white/50">({new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(savings)})</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <FormMessage />
+                                            </FormItem>
+                                        );
+                                    }}
+                                />
+                            </div>
+
+                            {/* 4. Identity (Name & Desc) */}
+                            <div className="grid grid-cols-1 gap-6">
+                                <FormField
+                                    control={form.control}
+                                    name="name"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">4. Nome do Kit</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all uppercase text-xs tracking-widest" placeholder="EX: KIT ZOMO START" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="seo_description"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Descrição Tática (Curta)</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    {...field}
+                                                    className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all text-xs"
+                                                    placeholder="Resumo para cards e SEO..."
+                                                    value={field.value || ""}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-6">
+                                <FormField
+                                    control={form.control}
+                                    name="description"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Descrição Completa</FormLabel>
+                                            <FormControl>
+                                                <Textarea
+                                                    {...field}
+                                                    className="bg-black border-2 border-white/10 text-white rounded-none min-h-[100px] focus:border-primary transition-all text-xs resize-y"
+                                                    placeholder="Detalhes completos do produto..."
+                                                    value={field.value || ""}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            {/* Tags for Kits */}
+                            <div className="space-y-2">
+                                <FormField
+                                    control={form.control}
+                                    name="flavor_tags"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Tags Rápidas</FormLabel>
+                                            <FormControl>
+                                                <TagInput
+                                                    tags={field.value || []}
+                                                    setTags={field.onChange}
+                                                    suggestions={allTags}
+                                                    placeholder="TAG + ENTER"
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* SEO Section (Collapsible or just bottom) */}
+                    <div className="pt-8 border-t border-white/5 opacity-50 hover:opacity-100 transition-opacity">
+                        <h4 className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-600 mb-4">Metadata SEO</h4>
+                        <div className="grid grid-cols-1 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="seo_title"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <Input {...field} className="bg-black/50 border border-white/5 text-xs h-10" placeholder="Meta Title" />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+
+                        </div>
+                    </div>
+
+                </div>
             </form>
-        </Form>
+        </Form >
     );
 }

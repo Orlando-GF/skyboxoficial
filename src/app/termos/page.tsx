@@ -1,70 +1,86 @@
-import { createClient } from "@/utils/supabase/server";
+import Background from "@/components/Background";
 
 export const metadata = {
     title: "Termos de Uso e Política de Privacidade | Tabacaria Skybox",
     description: "Termos de uso, política de privacidade e condições de compra da Tabacaria Skybox.",
 };
 
-export default async function TermosPage() {
-    const supabase = await createClient();
-    const { data: config } = await supabase.from("store_settings").select("terms_content").single();
-
-    const hasCustomContent = config?.terms_content && config.terms_content.trim().length > 0;
-
+export default function TermosPage() {
     return (
-        <main className="min-h-screen bg-neutral-950 text-neutral-200 py-20 px-6">
-            <div className="container mx-auto max-w-4xl">
-                <h1 className="text-4xl font-display font-bold text-white mb-8 border-b border-white/10 pb-4">
-                    Termos de Uso e Política de Privacidade
-                </h1>
+        <main className="min-h-screen pt-32 pb-20 relative">
+            <Background />
 
-                <div className="space-y-8 text-neutral-400">
-                    {hasCustomContent ? (
-                        <div className="whitespace-pre-wrap font-sans text-neutral-300 leading-relaxed">
-                            {config.terms_content}
-                        </div>
-                    ) : (
-                        <>
-                            <section>
-                                <h2 className="text-2xl font-bold text-white mb-4">1. Aceitação dos Termos</h2>
-                                <p>
-                                    Ao acessar e usar este site, você declara ter conhecimento e concordar com os estes termos.
-                                    <strong> O acesso é estritamente proibido para menores de 18 anos.</strong> A Tabacaria Skybox se reserva o direito de solicitar comprovação de idade a qualquer momento.
-                                </p>
-                            </section>
+            <div className="container mx-auto px-4 relative z-10">
+                <div className="max-w-3xl mx-auto">
+                    <h1 className="text-4xl md:text-5xl font-display font-bold text-white mb-12 uppercase tracking-tighter border-b border-white/10 pb-8">
+                        Termos de <span className="text-primary">Uso</span>
+                    </h1>
 
-                            <section>
-                                <h2 className="text-2xl font-bold text-white mb-4">2. Produtos Restritos</h2>
-                                <p>
-                                    Todos os produtos comercializados neste site são destinados exclusivamente a adultos. É crime vender, fornecer, servir, ministrar ou entregar, ainda que gratuitamente, de qualquer forma, a criança ou a adolescente, produtos cujos componentes possam causar dependência física ou psíquica.
-                                </p>
-                            </section>
+                    <div className="prose prose-invert prose-lg max-w-none text-gray-300">
+                        <section className="mb-12 border-l-2 border-primary/20 pl-6">
+                            <h2 className="text-xl font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <span className="text-primary">01.</span> Aceitação
+                            </h2>
+                            <p>
+                                Ao acessar a Skybox Tabacaria, você concorda com estes termos de serviço, todas as leis e regulamentos aplicáveis,
+                                e concorda que é responsável pelo cumprimento de todas as leis locais aplicáveis. O acesso é estritamente proibido para menores de 18 anos.
+                            </p>
+                        </section>
 
-                            <section>
-                                <h2 className="text-2xl font-bold text-white mb-4">3. Política de Privacidade</h2>
-                                <p>
-                                    Respeitamos sua privacidade. Seus dados pessoais serão utilizados apenas para processar seus pedidos e melhorar sua experiência no site. Não vendemos nem compartilhamos seus dados com terceiros para fins de marketing não autorizado.
-                                </p>
-                            </section>
+                        <section className="mb-12 border-l-2 border-primary/20 pl-6">
+                            <h2 className="text-xl font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <span className="text-primary">02.</span> Produtos Restritos
+                            </h2>
+                            <p>
+                                Todos os produtos comercializados neste site são destinados exclusivamente a adultos. É crime vender, fornecer, servir, ministrar ou entregar, ainda que gratuitamente, de qualquer forma, a criança ou a adolescente, produtos cujos componentes possam causar dependência física ou psíquica.
+                            </p>
+                        </section>
 
-                            <section>
-                                <h2 className="text-2xl font-bold text-white mb-4">4. Política de Entrega e Devolução</h2>
-                                <p>
-                                    Prazos de entrega são estimados e podem variar. Em caso de arrependimento, o consumidor tem o prazo de 7 dias a contar do recebimento do produto para solicitar a devolução, conforme o Código de Defesa do Consumidor, desde que o produto esteja lacrado e sem uso.
-                                </p>
-                            </section>
+                        <section className="mb-12 border-l-2 border-primary/20 pl-6">
+                            <h2 className="text-xl font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <span className="text-primary">03.</span> Licença de Uso
+                            </h2>
+                            <p>
+                                É concedida permissão para baixar temporariamente uma cópia dos materiais (informações ou software) no site Skybox,
+                                apenas para visualização transitória pessoal e não comercial. Esta é a concessão de uma licença, não uma transferência de título.
+                            </p>
+                        </section>
 
-                            <section>
-                                <h2 className="text-2xl font-bold text-white mb-4">5. Alterações</h2>
-                                <p>
-                                    A Tabacaria Skybox reserva-se o direito de alterar estes termos a qualquer momento, sem aviso prévio. Recomendamos a revisão periódica desta página.
-                                </p>
-                            </section>
-                        </>
-                    )}
+                        <section className="mb-12 border-l-2 border-primary/20 pl-6">
+                            <h2 className="text-xl font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <span className="text-primary">04.</span> Isenção de Responsabilidade
+                            </h2>
+                            <p>
+                                Os materiais no site da Skybox são fornecidos "como estão". A Skybox não oferece garantias, expressas ou implícitas,
+                                e, por este meio, isenta e nega todas as outras garantias, incluindo, sem limitação, garantias implícitas ou condições
+                                de comercialização, adequação a um fim específico ou não violação de propriedade intelectual.
+                            </p>
+                        </section>
 
-                    <div className="pt-8 border-t border-white/10 mt-12 text-sm text-neutral-500">
-                        <p>Última atualização: {new Date().getFullYear()}</p>
+                        <section className="mb-12 border-l-2 border-primary/20 pl-6">
+                            <h2 className="text-xl font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <span className="text-primary">05.</span> Política de Privacidade
+                            </h2>
+                            <p>
+                                Respeitamos sua privacidade. Seus dados pessoais serão utilizados apenas para processar seus pedidos e melhorar sua experiência no site.
+                                Não vendemos nem compartilhamos seus dados com terceiros para fins de marketing não autorizado.
+                            </p>
+                        </section>
+
+                        <section className="mb-12 border-l-2 border-primary/20 pl-6">
+                            <h2 className="text-xl font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <span className="text-primary">06.</span> Limitações
+                            </h2>
+                            <p>
+                                Em nenhum caso a Skybox ou seus fornecedores serão responsáveis por quaisquer danos (incluindo, sem limitação,
+                                danos por perda de dados ou lucro ou devido a interrupção dos negócios) decorrentes do uso ou da incapacidade
+                                de usar os materiais em Skybox.
+                            </p>
+                        </section>
+                    </div>
+
+                    <div className="pt-8 border-t border-white/10 mt-12 text-sm text-neutral-500 font-mono">
+                        <p>SKYBOX TABACARIA: {new Date().getFullYear()}.1.0 // SESSÕES DE OUTRO MUNDO</p>
                     </div>
                 </div>
             </div>

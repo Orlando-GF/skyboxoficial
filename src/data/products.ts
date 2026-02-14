@@ -1,5 +1,13 @@
 export const products = [
     {
+        id: "b2c0f95f-cdb6-4142-b663-c87b2668b7e9",
+        name: "Narguile Completo",
+        price: 300.00,
+        category: "Narguiles",
+        image: "https://images.unsplash.com/photo-1577563908411-5077b6dc7624?auto=format&fit=crop&q=80&w=1000",
+        featured: false,
+    },
+    {
         id: 1,
         name: "Kit Sessão Premium",
         price: 450.00,

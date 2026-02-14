@@ -7,8 +7,8 @@ export const CATEGORIES = ["Todos", "Kits", "Narguiles", "Essências", "Carvão"
 export const ITEMS_PER_PAGE = 8;
 
 export const DEFAULT_IMAGES = {
-    HERO_BG: "https://images.unsplash.com/photo-1543722530-d2c3201371e7?auto=format&fit=crop&q=80&w=2000",
-    PRODUCT_PLACEHOLDER: "https://images.unsplash.com/photo-1618331835717-801e976710b2?auto=format&fit=crop&q=80&w=1000",
+    HERO_BG: "/images/hero-bg.jpg", // Local image or leave empty if using CSS gradients
+    PRODUCT_PLACEHOLDER: "", // Empty to trigger fallback UI
 };
 
 export const LINKS = {

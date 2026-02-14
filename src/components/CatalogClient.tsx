@@ -1,10 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import ProductCard from "@/components/ProductCard";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
 import { Product } from "@/types";
 import { CATEGORIES, ITEMS_PER_PAGE } from "@/constants";
+
+import { normalizeProducts } from "@/utils/productUtils";
 
 interface CatalogClientProps {
     initialProducts: Product[];
@@ -16,11 +19,8 @@ export default function CatalogClient({ initialProducts }: CatalogClientProps) {
     const [currentPage, setCurrentPage] = useState(1);
 
 
-    // Map products to ensure correct type types
-    const products: Product[] = initialProducts.map(p => ({
-        ...p,
-        price: Number(p.price)
-    }));
+    // Map products using utility
+    const products = normalizeProducts(initialProducts);
 
     const filteredProducts = products.filter(product => {
         const matchesCategory = selectedCategory === "Todos" || product.category === selectedCategory;
@@ -38,18 +38,26 @@ export default function CatalogClient({ initialProducts }: CatalogClientProps) {
 
     return (
         <div className="container mx-auto px-4 py-8" suppressHydrationWarning>
+            {/* Back to Home */}
+            <div className="mb-8">
+                <Link href="/" className="inline-flex items-center gap-2 text-primary/60 hover:text-primary transition-colors uppercase text-[10px] font-bold tracking-widest group">
+                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                    Voltar para o Início
+                </Link>
+            </div>
+
             {/* Header & Controls */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
                 <h1 className="text-6xl font-display font-bold text-white uppercase tracking-tighter leading-none">
                     SKYBOX<br />
-                    <span className="text-primary italic">SYSTEM_STORE</span>
+                    <span className="text-primary italic">TABACARIA_STORE</span>
                 </h1>
 
                 <div className="relative w-full md:w-96">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
                     <input
                         type="text"
-                        placeholder="BUSCAR PROTOCOLO..."
+                        placeholder="BUSCAR PRODUTOS..."
                         value={searchQuery}
                         onChange={(e) => {
                             setSearchQuery(e.target.value);
@@ -128,7 +136,7 @@ export default function CatalogClient({ initialProducts }: CatalogClientProps) {
                 </>
             ) : (
                 <div className="text-center py-20">
-                    <p className="text-primary/40 text-[10px] font-bold uppercase tracking-widest">Nenhum protocolo encontrado.</p>
+                    <p className="text-primary/40 text-[10px] font-bold uppercase tracking-widest">Nenhum produto encontrado.</p>
                 </div>
             )}
         </div>

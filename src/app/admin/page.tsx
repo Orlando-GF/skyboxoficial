@@ -51,13 +51,19 @@ export default async function DashboardPage() {
         { hour: "22h", clicks: 9 },
     ];
 
+    // 5. Conversion Rate Logic
+    const visitors = campaignLeads || 0; // Using campaign visits as proxy for unique visitors
+    const clicks = whatsappClicks || 0;
+    const conversionRate = visitors > 0 ? (clicks / visitors) * 100 : 0;
+
     return (
         <DashboardClient
             metrics={{
                 whatsappClicks: whatsappClicks || 0,
                 outOfStock: outOfStock || 0,
                 mostDesired: String(mostDesired),
-                campaignLeads: campaignLeads || 0
+                campaignLeads: campaignLeads || 0,
+                conversionRate: Number(conversionRate.toFixed(1))
             }}
             chartData={chartData}
         />

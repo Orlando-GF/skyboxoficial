@@ -59,7 +59,7 @@ export default function AgeGate() {
                                     SKYBOX
                                 </h1>
                                 <p className="text-primary text-[10px] font-bold tracking-[0.2em] uppercase">
-                                    VERIFICAÇÃO DE PROTOCOLO OBRIGATÓRIA
+                                    VERIFICAÇÃO DE IDADE OBRIGATÓRIA
                                 </p>
                             </div>
 
@@ -74,7 +74,7 @@ export default function AgeGate() {
                                     onClick={handleReject}
                                     className="w-full bg-transparent border-2 border-white/20 hover:border-white text-white font-bold py-4 px-8 transition-all uppercase tracking-widest text-xs"
                                 >
-                                    ABORTAR SISTEMA
+                                    NÃO SOU DE MAIOR
                                 </button>
                             </div>
 

@@ -19,7 +19,7 @@ export function AdminSidebar() {
     return (
         <>
             {/* Desktop Sidebar */}
-            <aside className="w-64 bg-black border-r-2 border-white/5 hidden md:flex flex-col h-screen fixed left-0 top-0">
+            <aside className="w-64 bg-[#000000] border-r-2 border-white/5 hidden md:flex flex-col h-screen fixed left-0 top-0 z-40">
                 <div className="p-6">
                     <h1 className="text-xl font-bold text-white font-display tracking-wider uppercase">
                         SKYBOX <span className="text-primary text-[10px] align-top tracking-[0.3em] font-bold">ADMIN</span>
@@ -57,7 +57,7 @@ export function AdminSidebar() {
             </aside>
 
             {/* Mobile Bottom Navigation */}
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black border-t-2 border-primary/20 z-50 flex justify-around p-0">
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#000000] border-t-2 border-primary/20 z-50 flex justify-around p-0">
                 {sidebarItems.map((item) => {
                     const isActive = pathname === item.href;
                     return (

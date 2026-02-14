@@ -102,7 +102,7 @@ export default function ProductsPage() {
                             ADICIONAR ITEM
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-2xl bg-black border-2 border-white/5 rounded-none text-white shadow-[0_0_50px_-12px_rgba(190,242,100,0.1)] max-h-[90vh] overflow-y-auto p-0">
+                    <DialogContent className="max-w-5xl sm:max-w-[1100px] w-full bg-black border-2 border-white/5 rounded-none text-white shadow-[0_0_50px_-12px_rgba(190,242,100,0.1)] max-h-[95vh] overflow-y-auto p-0">
                         <DialogHeader className="p-8 border-b-2 border-white/5 bg-primary/5">
                             <DialogTitle className="text-3xl font-display font-black uppercase tracking-tighter text-primary">
                                 {editingProduct ? "EDITAR_REGISTRO" : "NOVO_REGISTRO"}

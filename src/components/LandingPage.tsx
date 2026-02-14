@@ -3,21 +3,20 @@
 import { Product } from "@/types";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
-import { DEFAULT_IMAGES } from "@/constants";
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import Background from "@/components/Background";
+
+import { normalizeProducts } from "@/utils/productUtils";
 
 interface LandingPageProps {
     products: Product[];
 }
 
 export default function LandingPage({ products }: LandingPageProps) {
-    // Map Supabase product to Product structure and identify featured
-    const formattedProducts = products.map(p => ({
-        ...p,
-        price: Number(p.price)
-    }));
+    // Map Supabase product to Product structure using utility
+    const formattedProducts = normalizeProducts(products);
 
     const searchParams = useSearchParams();
     const supabase = createClient();
@@ -46,11 +45,7 @@ export default function LandingPage({ products }: LandingPageProps) {
 
     return (
         <main className="min-h-screen pb-24 relative overflow-x-hidden" suppressHydrationWarning>
-            {/* Background Ambience - Obsidian Deep Pure */}
-            <div className="fixed inset-0 z-[-1] bg-background" />
-
-            {/* Subtle Noise/Texture Overlay for Industrial Feel (Optional, using CSS instead of image for now) */}
-            <div className="fixed inset-0 z-[-1] opacity-20 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+            <Background />
 
             {/* Hero Section - Radical Asymmetric */}
             <header className="pt-32 pb-20 px-6 relative z-10 container mx-auto flex flex-col items-start text-left">
@@ -82,7 +77,7 @@ export default function LandingPage({ products }: LandingPageProps) {
                 </div>
 
                 <span className="inline-block py-2 px-4 bg-primary text-black text-[10px] font-bold tracking-[0.3em] uppercase mb-8">
-                    SKYBOX PROTOCOL v2.0
+                    SKYBOX TABACARIA v2.0
                 </span>
 
                 <h1 className="text-6xl md:text-9xl font-display font-bold text-white mb-8 tracking-tighter leading-[0.85] uppercase">
@@ -101,7 +96,7 @@ export default function LandingPage({ products }: LandingPageProps) {
                         href="/catalogo"
                         className="bg-white text-black font-bold py-5 px-10 border-2 border-white hover:bg-primary hover:border-primary hover:text-black transition-all uppercase tracking-widest text-sm"
                     >
-                        EXPLORAR SISTEMA
+                        VER CATÁLOGO
                     </Link>
                 </div>
             </header>
@@ -110,7 +105,7 @@ export default function LandingPage({ products }: LandingPageProps) {
             <section className="container mx-auto px-4 mt-12">
                 <h2 className="text-3xl font-display font-bold text-white mb-12 flex items-center gap-4 uppercase tracking-tighter">
                     <span className="text-primary">{"//"}</span>
-                    Destaques Técnicos
+                    Destaques Premium
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 auto-rows-[minmax(180px,auto)]" suppressHydrationWarning>
@@ -126,14 +121,20 @@ export default function LandingPage({ products }: LandingPageProps) {
                                 <p className="text-slate-400 mb-8 max-w-sm line-clamp-3 text-sm">
                                     {featuredProduct.description || "Performance extrema e estética industrial. O supra-sumo da categoria Skybox."}
                                 </p>
-                                <Link href={`/catalogo?search=${featuredProduct.name}`} className="inline-block bg-primary text-black font-bold py-4 px-8 hover:bg-white transition-colors uppercase text-xs tracking-widest">
+                                <Link href={`/produto/${featuredProduct.id}`} className="inline-block bg-primary text-black font-bold py-4 px-8 hover:bg-white transition-colors uppercase text-xs tracking-widest">
                                     DETALHAR PRODUTO
                                 </Link>
                             </div>
-                            <div
-                                className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110 z-10 opacity-40 group-hover:opacity-70 grayscale hover:grayscale-0"
-                                style={{ backgroundImage: `url('${featuredProduct.image || DEFAULT_IMAGES.PRODUCT_PLACEHOLDER}')` }}
-                            />
+                            {featuredProduct.image ? (
+                                <div
+                                    className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110 z-10 opacity-40 group-hover:opacity-70 grayscale hover:grayscale-0"
+                                    style={{ backgroundImage: `url('${featuredProduct.image}')` }}
+                                />
+                            ) : (
+                                <div className="absolute inset-0 bg-white/5 z-10 flex items-center justify-center opacity-40">
+                                    <span className="text-white/20 text-4xl font-black uppercase tracking-widest">SKYBOX</span>
+                                </div>
+                            )}
                             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent z-10" />
                         </div>
                     )}
@@ -153,7 +154,7 @@ export default function LandingPage({ products }: LandingPageProps) {
                         <div className="absolute inset-0 bg-primary/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                         <div className="relative z-10">
                             <h3 className="text-white font-bold text-xl uppercase tracking-tighter group-hover:text-primary transition-colors flex items-center justify-center gap-3">
-                                FULL SYSTEM
+                                VER TUDO
                                 <span className="inline-block transition-transform group-hover:translate-x-2">[→]</span>
                             </h3>
                         </div>

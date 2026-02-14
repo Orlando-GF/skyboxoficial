@@ -17,7 +17,7 @@ export default function CartFab() {
             }}
             whileTap={{ scale: 0.9 }}
             onClick={toggleCart}
-            className="fixed bottom-8 right-8 z-40 bg-primary text-black p-5 border-2 border-black shadow-[4px_4px_0px_#ffffff20] hover:shadow-[6px_6px_0px_#ffffff40] transition-all"
+            className="fixed bottom-8 right-8 z-[60] bg-primary text-black p-5 border-2 border-black shadow-[4px_4px_0px_#ffffff20] hover:shadow-[6px_6px_0px_#ffffff40] transition-all"
         >
             <ShoppingBag className="w-6 h-6" />
             <AnimatePresence>

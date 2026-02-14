@@ -111,8 +111,10 @@ export function DataTable<TData, TValue>({
             </div>
 
             <div className="flex items-center justify-between p-4 border-t-2 border-white/5 bg-black">
-                <div className="text-[10px] uppercase font-bold tracking-[0.2em] text-white/20">
-                    Protocolo_Paginação_Ativo
+                <div className="flex items-center gap-4">
+                    <div className="text-[10px] uppercase font-bold tracking-[0.2em] text-white/20">
+                        Protocolo_Paginação: {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
+                    </div>
                 </div>
                 <div className="flex items-center space-x-2">
                     <Button

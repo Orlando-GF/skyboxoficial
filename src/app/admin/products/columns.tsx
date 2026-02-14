@@ -16,6 +16,7 @@ export type Product = {
     id: string;
     name: string;
     price: number;
+    original_price?: number;
     category: string;
     stock: boolean;
     image: string;
@@ -104,12 +105,27 @@ export const getColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Produc
         header: () => <div className="text-right text-[10px] uppercase font-bold tracking-[0.2em] text-primary">Valor Unitário</div>,
         cell: ({ row }) => {
             const amount = parseFloat(row.getValue("price"));
+            const originalPrice = row.original.original_price ? Number(row.original.original_price) : 0;
+            const hasDiscount = originalPrice > amount;
+            const discountPercentage = hasDiscount ? Math.round(((originalPrice - amount) / originalPrice) * 100) : 0;
+
             const formatted = new Intl.NumberFormat("pt-BR", {
                 style: "currency",
                 currency: "BRL",
             }).format(amount);
 
-            return <div className="text-right font-black text-primary tracking-tighter text-sm font-mono">{formatted}</div>;
+            return (
+                <div className="flex flex-col items-end gap-1">
+                    <div className="flex items-center gap-2">
+                        {hasDiscount && (
+                            <span className="bg-primary text-black text-[9px] font-black px-1.5 py-0.5 animate-in fade-in zoom-in uppercase tracking-widest whitespace-nowrap">
+                                {discountPercentage}% OFF
+                            </span>
+                        )}
+                        <div className="text-right font-black text-primary tracking-tighter text-sm font-mono">{formatted}</div>
+                    </div>
+                </div>
+            );
         },
     },
     {
