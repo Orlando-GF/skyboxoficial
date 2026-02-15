@@ -51,7 +51,7 @@ export default function TermosPage() {
                                 <span className="text-primary">04.</span> Isenção de Responsabilidade
                             </h2>
                             <p>
-                                Os materiais no site da Skybox são fornecidos "como estão". A Skybox não oferece garantias, expressas ou implícitas,
+                                Os materiais no site da Skybox são fornecidos &quot;como estão&quot;. A Skybox não oferece garantias, expressas ou implícitas,
                                 e, por este meio, isenta e nega todas as outras garantias, incluindo, sem limitação, garantias implícitas ou condições
                                 de comercialização, adequação a um fim específico ou não violação de propriedade intelectual.
                             </p>

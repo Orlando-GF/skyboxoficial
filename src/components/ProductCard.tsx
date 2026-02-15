@@ -136,19 +136,27 @@ export default function ProductCard({ product, className, priority }: ProductCar
                     </h3>
                 </Link>
 
-                {/* Variant Previews (Colors) */}
+                {/* Variant Previews (Colors vs Flavors) */}
                 {product.variants && product.variants.length > 0 && (
-                    <div className="flex gap-1.5 items-center my-1">
-                        {product.variants.slice(0, 5).map((variant) => (
-                            <div
-                                key={variant.id}
-                                className={`w-3 h-3 rounded-full border border-white/10 shadow-[1px_1px_0px_#000] ${!variant.stock ? "opacity-30 grayscale" : ""}`}
-                                style={{ backgroundColor: variant.value }}
-                                title={`${variant.name}${!variant.stock ? ' (Sem estoque)' : ''}`}
-                            />
-                        ))}
-                        {product.variants.length > 5 && (
-                            <span className="text-[8px] text-white/40 font-bold">+{product.variants.length - 5}</span>
+                    <div className="flex gap-1.5 items-center my-1 select-none">
+                        {product.variants.some(v => v.type === 'flavor') ? (
+                            <span className="text-[10px] font-black uppercase tracking-[0.15em] text-primary/80 group-hover:text-primary transition-colors">
+                                VEJA TODOS {product.variants.filter(v => v.type === 'flavor').length} SABORES
+                            </span>
+                        ) : (
+                            <>
+                                {product.variants.filter(v => v.type === 'color' || !v.type).slice(0, 5).map((variant) => (
+                                    <div
+                                        key={variant.id}
+                                        className={`w-3 h-3 rounded-full border border-white/10 shadow-[1px_1px_0px_#000] ${!variant.stock ? "opacity-30 grayscale" : ""}`}
+                                        style={{ backgroundColor: variant.value }}
+                                        title={`${variant.name}${!variant.stock ? ' (Sem estoque)' : ''}`}
+                                    />
+                                ))}
+                                {product.variants.filter(v => v.type === 'color' || !v.type).length > 5 && (
+                                    <span className="text-[8px] text-white/40 font-bold">+{product.variants.filter(v => v.type === 'color' || !v.type).length - 5}</span>
+                                )}
+                            </>
                         )}
                     </div>
                 )}

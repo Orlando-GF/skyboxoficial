@@ -1,11 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
-import { formatBRL } from "@/utils/format";
-import AddToCartButton from "@/components/AddToCartButton";
-import { Badge } from "@/components/ui/badge";
-import { Plus, ArrowLeft } from "lucide-react";
 import { Metadata } from "next";
 import Background from "@/components/Background";
 import ProductView from "@/components/ProductView";
@@ -64,17 +58,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
             .in("id", product.kit_items);
         kitItemsData = items || [];
     }
-
-    // Calculate "De" price for Kits
-    const kitOriginalPrice = kitItemsData.reduce((acc, item) => acc + Number(item.price), 0);
-    const isKitCheck = product.is_kit && kitItemsData.length > 0;
-
-    // "De" price for individual products
-    const individualOriginalPrice = Number(product.original_price) || 0;
-    const isIndividualDiscount = !isKitCheck && individualOriginalPrice > Number(product.price);
-
-    const finalOriginalPrice = isKitCheck ? kitOriginalPrice : individualOriginalPrice;
-    const hasDiscount = isKitCheck || isIndividualDiscount;
 
     return (
         <main className="min-h-screen pt-32 pb-20 bg-transparent relative overflow-hidden">

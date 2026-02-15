@@ -5,7 +5,7 @@ import { Product } from "@/types";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft, Search as SearchIcon } from "lucide-react";
 import { formatBRL } from "@/utils/format";
 import { useCartStore } from "@/store/cartStore";
 import { toast } from "sonner";
@@ -20,6 +20,7 @@ interface ProductViewProps {
 export default function ProductView({ product, kitItemsData }: ProductViewProps) {
     const [selectedImage, setSelectedImage] = useState(product.image);
     const [selectedVariant, setSelectedVariant] = useState<{ id: string; name: string; value: string; stock: boolean } | null>(null);
+    const [searchTerm, setSearchTerm] = useState("");
     const addItem = useCartStore((state) => state.addItem);
 
     // Calculate Prices
@@ -125,48 +126,85 @@ export default function ProductView({ product, kitItemsData }: ProductViewProps)
                 </div>
 
                 {/* Variants Selector */}
-                {product.variants && product.variants.length > 0 && (
-                    <div className="space-y-3 border-y border-white/5 py-6">
-                        <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">
-                            Escolha uma opção:
-                        </span>
-                        <div className="flex flex-wrap gap-3">
-                            {product.variants.map((variant) => (
-                                <button
-                                    key={variant.id}
-                                    onClick={() => variant.stock && setSelectedVariant(variant)}
-                                    disabled={!variant.stock}
-                                    aria-label={`Selecionar ${variant.name}${!variant.stock ? ' (Indisponível)' : ''}`}
-                                    className={cn(
-                                        "group flex items-center gap-3 px-4 py-2 border-2 transition-all min-w-[140px]",
-                                        selectedVariant?.id === variant.id
-                                            ? "border-primary bg-primary/10"
-                                            : "border-white/10 bg-black hover:border-white/30",
-                                        !variant.stock && "opacity-50 cursor-not-allowed grayscale border-white/5"
-                                    )}
-                                >
-                                    <div
-                                        className="w-4 h-4 rounded-full border border-white/20 shadow-sm"
-                                        style={{ backgroundColor: variant.value }}
-                                    />
-                                    <div className="flex flex-col items-start">
-                                        <span className={cn(
-                                            "text-xs font-bold uppercase tracking-wider",
-                                            selectedVariant?.id === variant.id ? "text-primary" : "text-white"
-                                        )}>
-                                            {variant.name}
-                                        </span>
-                                        {!variant.stock && (
-                                            <span className="text-[8px] text-red-500 font-black uppercase tracking-widest">
-                                                Esgotado
-                                            </span>
-                                        )}
+                {product.variants && product.variants.length > 0 && (() => {
+                    const variants = product.variants;
+                    const filteredVariants = variants.filter(v => v.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
+                    return (
+                        <div className="space-y-4 border-y border-white/5 py-6">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">
+                                    {variants.length > 6 ? "Escolha o Sabor:" : "Escolha uma opção:"}
+                                </span>
+                                {variants.length > 10 && (
+                                    <div className="relative group">
+                                        <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-500 group-focus-within:text-primary transition-colors" />
+                                        <input
+                                            type="text"
+                                            placeholder="BUSCAR SABOR..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="bg-black border border-white/10 text-[9px] font-bold uppercase tracking-widest pl-7 pr-2 py-1 w-32 focus:w-48 focus:border-primary transition-all outline-none"
+                                        />
                                     </div>
-                                </button>
-                            ))}
+                                )}
+                            </div>
+
+                            <div className={cn(
+                                "flex flex-wrap gap-2",
+                                variants.length > 6 ? "max-h-[300px] overflow-y-auto pr-2 no-scrollbar" : ""
+                            )}>
+                                {filteredVariants.map((variant) => (
+                                    <button
+                                        key={variant.id}
+                                        onClick={() => variant.stock && setSelectedVariant(variant)}
+                                        disabled={!variant.stock}
+                                        aria-label={`Selecionar ${variant.name}${!variant.stock ? ' (Indisponível)' : ''}`}
+                                        className={cn(
+                                            "group flex items-center transition-all border-2",
+                                            variants.length > 6
+                                                ? "gap-2 px-3 py-1.5 min-w-[100px] flex-1 md:flex-none" // Compact mode
+                                                : "gap-3 px-4 py-2 min-w-[140px]", // Regular mode
+                                            selectedVariant?.id === variant.id
+                                                ? "border-primary bg-primary/10 shadow-[2px_2px_0px_#bef264]"
+                                                : "border-white/10 bg-black hover:border-white/30",
+                                            !variant.stock && "opacity-50 cursor-not-allowed grayscale border-white/5"
+                                        )}
+                                    >
+                                        {(!variant.type || variant.type === 'color') && (
+                                            <div
+                                                className={cn(
+                                                    "rounded-full border border-white/20 shadow-sm shrink-0",
+                                                    variants.length > 6 ? "w-3 h-3" : "w-4 h-4"
+                                                )}
+                                                style={{ backgroundColor: variant.value }}
+                                            />
+                                        )}
+                                        <div className="flex flex-col items-start overflow-hidden">
+                                            <span className={cn(
+                                                "font-bold uppercase tracking-wider truncate w-full text-left",
+                                                variants.length > 6 ? "text-[10px]" : "text-xs",
+                                                selectedVariant?.id === variant.id ? "text-primary" : "text-white"
+                                            )}>
+                                                {variant.name}
+                                            </span>
+                                            {!variant.stock && (
+                                                <span className="text-[7px] text-red-500 font-black uppercase tracking-widest -mt-0.5">
+                                                    Esgotado
+                                                </span>
+                                            )}
+                                        </div>
+                                    </button>
+                                ))}
+                                {filteredVariants.length === 0 && (
+                                    <div className="w-full py-4 text-center border-2 border-dashed border-white/5">
+                                        <span className="text-[10px] uppercase font-bold text-slate-600 tracking-widest">Sabor não encontrado</span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    );
+                })()}
 
                 {/* Price Section */}
                 <div className="py-2">

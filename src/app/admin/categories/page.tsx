@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Pencil, Trash2, X, Check, Search } from "lucide-react";
+import { Plus, Search, Trash2, Pencil } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -33,25 +33,22 @@ export default function CategoriesPage() {
 
     const supabase = createClient();
 
-    const fetchCategories = async () => {
-        setLoading(true);
+    const fetchCategories = useCallback(async () => {
         const { data, error } = await supabase
             .from("categories")
             .select("*")
             .order("name");
 
         if (error) {
-            console.error("Erro ao buscar categorias:", error);
-            toast.error("Erro ao carregar categorias.");
+            toast.error("Erro ao carregar categorias");
         } else {
             setCategories(data || []);
         }
-        setLoading(false);
-    };
+    }, [supabase]);
 
     useEffect(() => {
         fetchCategories();
-    }, []);
+    }, [fetchCategories]);
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();

@@ -5,13 +5,11 @@ import { X, Minus, Plus, Trash2, MessageCircle, Truck } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { CartItem } from "@/types";
 import { formatBRL } from "@/utils/format";
 import Image from "next/image";
-import { toast } from "sonner";
 
 export default function CartDrawer() {
-    const { items, isOpen, toggleCart, removeItem, updateQuantity, total } = useCartStore();
+    const { items, isOpen, toggleCart, removeItem, updateQuantity } = useCartStore();
 
     const [paymentMethod, setPaymentMethod] = useState("pix");
     const [discountPercentage, setDiscountPercentage] = useState(0);

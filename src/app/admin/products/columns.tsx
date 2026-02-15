@@ -1,15 +1,8 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, ArrowUpDown, Pencil, Trash } from "lucide-react";
+import { ArrowUpDown, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 // This type is used to define the shape of our data.
 export type Product = {
@@ -155,7 +148,7 @@ export const getColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Produc
                         onClick={() => onDelete(product.id)}
                         className="w-8 h-8 rounded-none border-2 border-white/10 bg-black hover:bg-red-600 hover:text-white hover:border-red-600 transition-all group"
                     >
-                        <Trash className="w-3.5 h-3.5 group-hover:scale-110 transition-transform text-red-500 group-hover:text-white" />
+                        <Trash2 className="w-4 h-4" />
                     </Button>
                 </div>
             );

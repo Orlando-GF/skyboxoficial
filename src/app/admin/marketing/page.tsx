@@ -2,7 +2,7 @@
 export const runtime = 'edge';
 
 import { Link as LinkIcon, Copy, Check, History, QrCode, Trash } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,14 +22,13 @@ export default function MarketingPage() {
     const [generatedLink, setGeneratedLink] = useState("");
     const [copied, setCopied] = useState(false);
     const [source, setSource] = useState("instagram");
-    const [history, setHistory] = useState<LinkHistory[]>([]);
-
-    useEffect(() => {
-        const saved = localStorage.getItem("skybox_link_history");
-        if (saved) {
-            setHistory(JSON.parse(saved));
+    const [history, setHistory] = useState<LinkHistory[]>(() => {
+        if (typeof window !== "undefined") {
+            const saved = localStorage.getItem("skybox_link_history");
+            return saved ? JSON.parse(saved) : [];
         }
-    }, []);
+        return [];
+    });
 
     const saveToHistory = (newLink: LinkHistory) => {
         const updated = [newLink, ...history].slice(0, 5);
@@ -159,7 +158,7 @@ export default function MarketingPage() {
                                 <div className="bg-white p-4 rounded-none">
                                     <img
                                         src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(generatedLink)}`}
-                                        alt="QR Code da Campanha"
+                                        alt="QR Code gerado para a campanha de marketing"
                                         className="w-40 h-40 mix-blend-multiply"
                                     />
                                 </div>

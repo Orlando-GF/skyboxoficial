@@ -35,7 +35,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { TagInput } from "@/components/ui/tag-input";
-import { X, Upload, Loader2, Image as ImageIcon, Search, Plus, Star, Trash2 } from "lucide-react";
+import { X, Upload, Loader2, Star, Search, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
@@ -44,7 +44,7 @@ interface ProductFormProps {
     initialData?: Partial<ProductFormValues> & {
         id?: string;
         gallery?: string[];
-        variants?: { id: string; name: string; value: string; stock: boolean }[]
+        variants?: { id: string; name: string; value: string; stock: boolean; type?: 'color' | 'flavor' }[]
     };
     onSubmit?: (data: ProductFormValues) => void;
     isLoading?: boolean;
@@ -87,8 +87,9 @@ export function ProductForm({ initialData, onSubmit: parentOnSubmit, isLoading: 
     const [isUploadingGallery, setIsUploadingGallery] = useState(false);
 
     // Variants State
-    const [variants, setVariants] = useState<{ id: string; name: string; value: string; stock: boolean }[]>([]);
-    const [newVariant, setNewVariant] = useState({ name: "", value: "#000000", stock: true });
+    const [variants, setVariants] = useState<{ id: string; name: string; value: string; stock: boolean; type?: 'color' | 'flavor' }[]>([]);
+    const [newColor, setNewColor] = useState<{ name: string; value: string; stock: boolean; type: 'color' }>({ name: "", value: "#000000", stock: true, type: 'color' });
+    const [newFlavor, setNewFlavor] = useState<{ name: string; value: string; stock: boolean; type: 'flavor' }>({ name: "", value: "#000000", stock: true, type: 'flavor' });
 
     // Confirm States
     const [isConfirmingImageSwap, setIsConfirmingImageSwap] = useState(false);
@@ -177,10 +178,23 @@ export function ProductForm({ initialData, onSubmit: parentOnSubmit, isLoading: 
         setPendingImageIndex(null);
     };
 
-    const addVariant = () => {
-        if (!newVariant.name) return;
-        setVariants([...variants, { ...newVariant, id: crypto.randomUUID() }]);
-        setNewVariant({ name: "", value: "#000000", stock: true });
+    const addVariant = (type: 'color' | 'flavor') => {
+        const variantToAdd = type === 'color' ? newColor : newFlavor;
+        if (!variantToAdd.name) return;
+
+        setVariants([...variants, {
+            ...variantToAdd,
+            id: crypto.randomUUID(),
+            type,
+            // If it's a flavor, we might want a default neutral color or just preserve the #000000
+            value: type === 'flavor' ? '#000000' : variantToAdd.value
+        }]);
+
+        if (type === 'color') {
+            setNewColor({ name: "", value: "#000000", stock: true, type: 'color' });
+        } else {
+            setNewFlavor({ name: "", value: "#000000", stock: true, type: 'flavor' });
+        }
     };
 
     const removeVariant = (index: number) => {
@@ -365,7 +379,7 @@ export function ProductForm({ initialData, onSubmit: parentOnSubmit, isLoading: 
                         <div className="grid grid-cols-4 gap-2">
                             {gallery.map((url, idx) => (
                                 <div key={idx} className="relative aspect-square border border-white/10 bg-black group">
-                                    <img src={url} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
+                                    <img src={url} alt={`Imagem ${idx + 1} da galeria`} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
                                     <div className="absolute top-0 right-0 p-1 flex gap-1 transform translate-y-[-10px] group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all">
                                         <button
                                             type="button"
@@ -393,56 +407,7 @@ export function ProductForm({ initialData, onSubmit: parentOnSubmit, isLoading: 
                         </div>
                     </div>
 
-                    {/* Variants Section */}
-                    <div className="space-y-4 pt-4 border-t border-white/5">
-                        <Label className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Variações / Cores</Label>
 
-                        <div className="flex gap-2 items-end bg-white/5 p-2 border border-white/10">
-                            <div className="space-y-1 flex-1">
-                                <Label className="text-[9px] uppercase font-bold text-slate-500">Nome (Ex: Azul)</Label>
-                                <Input
-                                    value={newVariant.name}
-                                    onChange={(e) => setNewVariant({ ...newVariant, name: e.target.value })}
-                                    className="h-8 text-xs bg-black border-white/10 rounded-none uppercase"
-                                />
-                            </div>
-                            <div className="space-y-1 w-20">
-                                <Label className="text-[9px] uppercase font-bold text-slate-500">Cor</Label>
-                                <div className="flex h-8 w-full border border-white/10 overflow-hidden relative">
-                                    <Input
-                                        type="color"
-                                        value={newVariant.value}
-                                        onChange={(e) => setNewVariant({ ...newVariant, value: e.target.value })}
-                                        className="h-10 w-[150%] -translate-x-[25%] -translate-y-[10%] p-0 bg-transparent border-none cursor-pointer"
-                                    />
-                                </div>
-                            </div>
-                            <Button type="button" onClick={addVariant} className="h-8 w-8 p-0 rounded-none bg-primary text-black hover:bg-white">
-                                <Plus size={16} />
-                            </Button>
-                        </div>
-
-                        <div className="space-y-2">
-                            {variants.map((variant, idx) => (
-                                <div key={idx} className="flex items-center gap-3 bg-black border border-white/10 p-2 group">
-                                    <div className="w-4 h-4 border border-white/20" style={{ backgroundColor: variant.value }}></div>
-                                    <span className="flex-1 text-xs uppercase font-bold text-slate-300">{variant.name}</span>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => toggleVariantStock(idx)}
-                                        className={`text-[9px] font-black uppercase tracking-wider px-2 py-1 transition-colors ${variant.stock ? 'text-primary' : 'text-red-500'}`}
-                                    >
-                                        {variant.stock ? 'EM ESTOQUE' : 'SEM ESTOQUE'}
-                                    </button>
-
-                                    <button type="button" onClick={() => removeVariant(idx)} className="text-slate-500 hover:text-red-500 transition-colors">
-                                        <Trash2 size={14} />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
 
                     {/* Status Toggles */}
                     <div className="space-y-4 pt-4 border-t border-white/5">
@@ -581,7 +546,7 @@ export function ProductForm({ initialData, onSubmit: parentOnSubmit, isLoading: 
                                                     </FormControl>
                                                     <FormMessage />
                                                     <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-2 leading-relaxed h-[36px]">
-                                                        * Preço "cheio" anterior.
+                                                        * Preço &quot;cheio&quot; anterior.
                                                     </p>
                                                     {(field.value || 0) > 0 && (field.value || 0) <= (form.watch("price") || 0) && (
                                                         <p className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest mt-1 animate-pulse">
@@ -632,6 +597,125 @@ export function ProductForm({ initialData, onSubmit: parentOnSubmit, isLoading: 
                                             );
                                         }}
                                     />
+                                </div>
+
+                                {/* Variants Section - Split into Colors and Flavors */}
+                                <div className="space-y-8 pt-4 border-t border-white/5">
+
+                                    {/* SEÇÃO DE CORES */}
+                                    <div className="space-y-4">
+                                        <Label className="text-[10px] uppercase font-bold tracking-[0.2em] text-primary">2. Variações de Cores (Aparelhos/Outros)</Label>
+
+                                        <div className="flex gap-2 items-end bg-black border-2 border-white/10 p-3">
+                                            <div className="space-y-1 flex-1">
+                                                <Label className="text-[9px] uppercase font-bold text-slate-500">Nome da Cor</Label>
+                                                <Input
+                                                    value={newColor.name}
+                                                    onChange={(e) => setNewColor({ ...newColor, name: e.target.value })}
+                                                    placeholder="EX: PRETO, AZUL..."
+                                                    className="h-10 text-xs bg-black border-white/10 rounded-none uppercase focus:border-primary transition-all"
+                                                />
+                                            </div>
+                                            <div className="space-y-1 w-20">
+                                                <Label className="text-[9px] uppercase font-bold text-slate-500">Cor</Label>
+                                                <div className="flex h-10 w-full border border-white/10 overflow-hidden relative">
+                                                    <Input
+                                                        type="color"
+                                                        value={newColor.value}
+                                                        onChange={(e) => setNewColor({ ...newColor, value: e.target.value })}
+                                                        className="h-12 w-[150%] -translate-x-[25%] -translate-y-[10%] p-0 bg-transparent border-none cursor-pointer"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <Button
+                                                type="button"
+                                                onClick={() => addVariant('color')}
+                                                className="h-10 w-10 p-0 rounded-none bg-primary text-black hover:bg-white transition-colors"
+                                            >
+                                                <Plus size={20} />
+                                            </Button>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                            {variants.filter(v => v.type === 'color' || !v.type).map((variant) => (
+                                                <div key={variant.id} className="flex items-center gap-3 bg-black border border-white/10 p-2 group hover:border-white/30 transition-all">
+                                                    <div className="w-4 h-4 border border-white/20 shrink-0" style={{ backgroundColor: variant.value }}></div>
+                                                    <span className="flex-1 text-[10px] uppercase font-bold text-slate-300 truncate">{variant.name}</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const realIdx = variants.findIndex(v => v.id === variant.id);
+                                                            toggleVariantStock(realIdx);
+                                                        }}
+                                                        className={`text-[8px] font-black uppercase tracking-wider px-2 py-1 transition-colors border min-w-[65px] ${variant.stock ? 'border-primary/20 text-primary hover:bg-primary/10' : 'border-red-500/20 text-red-500 hover:bg-red-500/10'}`}
+                                                    >
+                                                        {variant.stock ? 'ESTOQUE' : 'FALTA'}
+                                                    </button>
+                                                    <button type="button" onClick={() => {
+                                                        const realIdx = variants.findIndex(v => v.id === variant.id);
+                                                        removeVariant(realIdx);
+                                                    }} className="text-slate-500 hover:text-red-500 transition-colors">
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* SEÇÃO DE SABORES */}
+                                    <div className="space-y-4 pt-4 border-t border-white/5">
+                                        <Label className="text-[10px] uppercase font-bold tracking-[0.2em] text-primary">3. Lista de Sabores (Essências/Juices)</Label>
+
+                                        <div className="flex gap-2 items-end bg-black border-2 border-white/10 p-3">
+                                            <div className="space-y-1 flex-1">
+                                                <Label className="text-[9px] uppercase font-bold text-slate-500">Nome do Sabor</Label>
+                                                <Input
+                                                    value={newFlavor.name}
+                                                    onChange={(e) => setNewFlavor({ ...newFlavor, name: e.target.value })}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            addVariant('flavor');
+                                                        }
+                                                    }}
+                                                    placeholder="DIGITE O SABOR E APERTE ENTER..."
+                                                    className="h-10 text-xs bg-black border-white/10 rounded-none uppercase focus:border-primary transition-all"
+                                                />
+                                            </div>
+                                            <Button
+                                                type="button"
+                                                onClick={() => addVariant('flavor')}
+                                                className="h-10 w-10 p-0 rounded-none bg-primary text-black hover:bg-white transition-colors"
+                                                title="Adicionar Sabor"
+                                            >
+                                                <Plus size={20} />
+                                            </Button>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                            {variants.filter(v => v.type === 'flavor').map((variant) => (
+                                                <div key={variant.id} className="flex items-center gap-3 bg-black border border-white/10 p-2 group hover:border-white/30 transition-all">
+                                                    <span className="flex-1 text-[10px] uppercase font-bold text-slate-300 truncate">{variant.name}</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const realIdx = variants.findIndex(v => v.id === variant.id);
+                                                            toggleVariantStock(realIdx);
+                                                        }}
+                                                        className={`text-[8px] font-black uppercase tracking-wider px-2 py-1 transition-colors border min-w-[65px] ${variant.stock ? 'border-primary/20 text-primary hover:bg-primary/10' : 'border-red-500/20 text-red-500 hover:bg-red-500/10'}`}
+                                                    >
+                                                        {variant.stock ? 'ESTOQUE' : 'FALTA'}
+                                                    </button>
+                                                    <button type="button" onClick={() => {
+                                                        const realIdx = variants.findIndex(v => v.id === variant.id);
+                                                        removeVariant(realIdx);
+                                                    }} className="text-slate-500 hover:text-red-500 transition-colors">
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

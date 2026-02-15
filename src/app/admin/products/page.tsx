@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import Link from 'next/link';
 import {
     Dialog,
     DialogContent,

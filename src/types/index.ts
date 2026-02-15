@@ -17,9 +17,10 @@ export interface Product {
     gallery?: string[];
     variants?: {
         id: string;
-        name: string; // Ex: Cor
-        value: string; // Ex: #FF0000 or "Azul"
+        name: string; // Ex: Cor ou Sabor
+        value: string; // Ex: #FF0000 para cor ou apenas o nome para sabor
         stock: boolean;
+        type?: 'color' | 'flavor'; // Para separar lógica de exibição
     }[];
 }
 

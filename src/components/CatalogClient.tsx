@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import ProductCard from "@/components/ProductCard";
 import { Search, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
 import { Product } from "@/types";
-import { CATEGORIES, ITEMS_PER_PAGE } from "@/constants";
+import { ITEMS_PER_PAGE } from "@/constants";
 
 import { normalizeProducts } from "@/utils/productUtils";
 
