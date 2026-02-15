@@ -46,7 +46,10 @@ export default function CartDrawer() {
         const totalValue = subtotal - discount;
 
         const itemsList = items
-            .map((item) => `• ${item.quantity}x ${item.name} | ${formatBRL(item.price * item.quantity)}`)
+            .map((item) => {
+                const variantText = item.selectedVariant ? ` (${item.selectedVariant.name})` : "";
+                return `• ${item.quantity}x ${item.name}${variantText} | ${formatBRL(item.price * item.quantity)}`;
+            })
             .join("\n");
 
         const message = `🚀 *PEDIDO SKYBOX* 🚀
@@ -125,7 +128,14 @@ ${paymentMethod === 'cash' ? '(X) Dinheiro/Entrega' : '( ) Dinheiro/Entrega'}
                                         </div>
                                         <div className="flex-1 flex flex-col justify-between">
                                             <div>
-                                                <h3 className="font-bold text-white">{item.name}</h3>
+                                                <h3 className="font-bold text-white">
+                                                    {item.name}
+                                                    {item.selectedVariant && (
+                                                        <span className="text-primary text-xs uppercase ml-2 tracking-wider">
+                                                            [{item.selectedVariant.name}]
+                                                        </span>
+                                                    )}
+                                                </h3>
                                                 <div className="flex items-baseline gap-2">
                                                     <p className="text-secondary font-mono">{formatBRL(item.price)}</p>
                                                     {item.original_price && item.original_price > item.price && (

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 const sidebarItems = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/products", label: "Produtos", icon: Package },
+    { href: "/admin/categories", label: "Categorias", icon: Package },
     { href: "/admin/marketing", label: "Marketing", icon: LinkIcon },
     { href: "/admin/settings", label: "Configurações", icon: Settings },
 ];

@@ -4,9 +4,9 @@ import { Product, CartItem } from "@/types";
 interface CartStore {
     items: CartItem[];
     isOpen: boolean;
-    addItem: (item: Product) => void;
-    removeItem: (id: string) => void;
-    updateQuantity: (id: string, quantity: number) => void;
+    addItem: (item: Product, variant?: { id: string; name: string; value: string }) => void;
+    removeItem: (cartId: string) => void;
+    updateQuantity: (cartId: string, quantity: number) => void;
     toggleCart: () => void;
     clearCart: () => void;
     total: () => number;
@@ -15,30 +15,43 @@ interface CartStore {
 export const useCartStore = create<CartStore>((set, get) => ({
     items: [],
     isOpen: false,
-    addItem: (item) =>
+    addItem: (item, variant) =>
         set((state) => {
-            const existingItem = state.items.find((i) => i.id === item.id);
+            const cartId = variant ? `${item.id}-${variant.id}` : item.id;
+            const existingItem = state.items.find((i) => i.cartId === cartId);
+
             if (existingItem) {
                 return {
                     items: state.items.map((i) =>
-                        i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+                        i.cartId === cartId ? { ...i, quantity: i.quantity + 1 } : i
                     ),
-                    // isOpen: true (Removed to keep cart closed)
                 };
             }
-            return { items: [...state.items, { ...item, quantity: 1 }] }; // isOpen: true (Removed)
+
+            return {
+                items: [
+                    ...state.items,
+                    {
+                        ...item,
+                        quantity: 1,
+                        selectedVariant: variant,
+                        cartId: cartId,
+                    },
+                ],
+            };
         }),
-    removeItem: (id) =>
+    removeItem: (cartId) =>
         set((state) => ({
-            items: state.items.filter((i) => i.id !== id),
+            items: state.items.filter((i) => i.cartId !== cartId),
         })),
-    updateQuantity: (id, quantity) =>
+    updateQuantity: (cartId, quantity) =>
         set((state) => ({
             items: state.items.map((i) =>
-                i.id === id ? { ...i, quantity: Math.max(0, quantity) } : i
+                i.cartId === cartId ? { ...i, quantity: Math.max(0, quantity) } : i
             ),
         })),
     toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
     clearCart: () => set({ items: [] }),
-    total: () => get().items.reduce((acc, item) => acc + item.price * item.quantity, 0),
+    total: () =>
+        get().items.reduce((acc, item) => acc + item.price * item.quantity, 0),
 }));

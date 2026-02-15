@@ -58,6 +58,11 @@ export const getColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Produc
                 </Button>
             );
         },
+        cell: ({ row }) => (
+            <div className="uppercase font-bold tracking-tight text-white">
+                {row.getValue("name")}
+            </div>
+        ),
     },
     {
         accessorKey: "category",

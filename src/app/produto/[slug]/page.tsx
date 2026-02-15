@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, ArrowLeft } from "lucide-react";
 import { Metadata } from "next";
 import Background from "@/components/Background";
+import ProductView from "@/components/ProductView";
 
 export const runtime = 'edge';
 
@@ -80,111 +81,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <Background />
 
             <div className="container mx-auto px-4 z-10 relative">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-white">
-                    {/* Image Section */}
-                    <div className="relative aspect-square border-2 border-white/10 bg-white/5 group">
-                        {product.image ? (
-                            <Image
-                                src={product.image}
-                                alt={product.name}
-                                fill
-                                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                priority
-                            />
-                        ) : (
-                            <div className="w-full h-full bg-white/5 flex items-center justify-center">
-                                <span className="text-white/20 text-xs uppercase font-bold tracking-widest">Sem Imagem</span>
-                            </div>
-                        )}
-                        {isKitCheck && (
-                            <div className="absolute top-4 left-4 bg-primary text-black font-black uppercase tracking-widest text-xs px-4 py-2">
-                                Smart Kit
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Details Section */}
-                    <div className="flex flex-col gap-6">
-                        <div>
-                            <Link href="/catalogo" className="inline-flex items-center gap-2 text-primary/60 hover:text-primary transition-colors uppercase text-[10px] font-bold tracking-widest mb-4 group">
-                                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                                Continuar Comprando
-                            </Link>
-
-                            <h1 className="text-4xl md:text-5xl font-display font-bold uppercase tracking-tighter leading-none mb-2">
-                                {product.name}
-                            </h1>
-                            <div className="flex flex-wrap gap-2 mb-4">
-                                {product.flavor_tags?.map((tag: string) => (
-                                    <Badge
-                                        key={tag}
-                                        variant="default"
-                                        className="text-[10px] uppercase font-bold tracking-[0.2em] bg-primary text-black px-2 py-0.5 rounded-none shadow-[1px_1px_0px_#000] hover:bg-primary/90 pointer-events-none"
-                                    >
-                                        {tag}
-                                    </Badge>
-                                ))}
-                            </div>
-
-                            {/* Tactical Description (Short) */}
-                            {product.seo_description && (
-                                <p className="text-sm text-slate-400 leading-relaxed max-w-md border-l-2 border-primary/50 pl-4 py-1 italic">
-                                    "{product.seo_description}"
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Price Section */}
-                        <div className="border-y-2 border-white/10 py-6">
-                            {hasDiscount && (
-                                <div className="flex items-center gap-3 mb-1">
-                                    <p className="text-slate-400 line-through font-mono text-lg">
-                                        DE: {formatBRL(finalOriginalPrice)}
-                                    </p>
-                                    <Badge variant="default" className="bg-primary text-black font-black uppercase tracking-widest text-[10px] rounded-none px-2 py-0.5 animate-pulse">
-                                        {Math.round(((finalOriginalPrice - product.price) / finalOriginalPrice) * 100)}% OFF
-                                    </Badge>
-                                </div>
-                            )}
-                            <p className={`text-4xl font-mono font-bold ${hasDiscount ? 'text-primary' : 'text-primary'}`}>
-                                {hasDiscount && "POR: "} {formatBRL(product.price)}
-                            </p>
-                        </div>
-
-                        {/* Kit Items List */}
-                        {isKitCheck && (
-                            <div className="bg-white/5 p-6 border border-white/10">
-                                <h3 className="text-sm font-bold uppercase tracking-widest mb-4 text-primary">O que vem no kit:</h3>
-                                <ul className="space-y-3">
-                                    {kitItemsData.map((item, index) => (
-                                        <li key={item.id} className="flex items-center gap-3 text-sm">
-                                            <span className="text-primary font-bold"><Plus size={14} /></span>
-                                            <span className="flex-1 border-b border-dashed border-white/20 pb-1 uppercase tracking-wider text-xs font-medium text-slate-300">
-                                                {item.name}
-                                            </span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-
-                        {/* Actions moved up */}
-                        <div className="mt-4">
-                            <AddToCartButton product={product} />
-                        </div>
-
-                        {/* Description */}
-                        {/* Full Description */}
-                        {product.description && (
-                            <div className="border-t-2 border-white/10 pt-8 mt-4">
-                                <h3 className="text-sm font-bold uppercase tracking-widest text-white mb-4">Detalhes do Produto</h3>
-                                <div className="prose prose-invert max-w-none text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
-                                    {product.description}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                <ProductView product={product} kitItemsData={kitItemsData} />
             </div>
         </main>
     );

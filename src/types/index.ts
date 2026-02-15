@@ -14,10 +14,19 @@ export interface Product {
     created_at?: string;
     is_kit?: boolean;
     kit_items?: string[];
+    gallery?: string[];
+    variants?: {
+        id: string;
+        name: string; // Ex: Cor
+        value: string; // Ex: #FF0000 or "Azul"
+        stock: boolean;
+    }[];
 }
 
 export interface CartItem extends Product {
     quantity: number;
+    selectedVariant?: { id: string; name: string; value: string };
+    cartId: string;
 }
 
 export interface StoreSettings {

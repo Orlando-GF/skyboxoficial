@@ -29,14 +29,22 @@ import { useState, useEffect } from "react";
 import { TagInput } from "@/components/ui/tag-input";
 import { X, Upload, Loader2, Image as ImageIcon, Search, Plus } from "lucide-react";
 import { toTitleCase } from "@/lib/utils";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { Label } from "@/components/ui/label";
+import { Trash2 } from "lucide-react";
 
 interface ProductFormProps {
-    initialData?: Partial<ProductFormValues>;
-    onSubmit: (data: ProductFormValues) => void;
-    isLoading: boolean;
+    initialData?: Partial<ProductFormValues> & {
+        id?: string;
+        gallery?: string[];
+        variants?: { id: string; name: string; value: string; stock: boolean }[]
+    };
+    onSubmit?: (data: ProductFormValues) => void;
+    isLoading?: boolean;
 }
 
-export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormProps) {
+export function ProductForm({ initialData, onSubmit: parentOnSubmit, isLoading: parentIsLoading }: ProductFormProps) {
     const form = useForm<ProductFormValues>({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resolver: zodResolver(productSchema) as any,
@@ -57,14 +65,155 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
         },
     });
 
+    const router = useRouter();
+    const product = initialData;
+    const [isLoading, setIsLoading] = useState(false);
     const [availableProducts, setAvailableProducts] = useState<{ id: string; name: string; price: number }[]>([]);
     const [allTags, setAllTags] = useState<string[]>([]);
     const [itemSearch, setItemSearch] = useState("");
     const [isUploading, setIsUploading] = useState(false);
     const supabase = createClient();
 
+    const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+
+    // Gallery State
+    const [gallery, setGallery] = useState<string[]>([]);
+    const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+
+    // Variants State
+    const [variants, setVariants] = useState<{ id: string; name: string; value: string; stock: boolean }[]>([]);
+    const [newVariant, setNewVariant] = useState({ name: "", value: "#000000", stock: true });
+
+    // Discount State
+    const [showDiscount, setShowDiscount] = useState(false);
+
+    useEffect(() => {
+        if (product) {
+            form.reset({
+                name: product.name,
+                description: product.description || "",
+                price: product.price,
+                original_price: product.original_price || undefined,
+                category: product.category,
+                image: product.image,
+                stock: product.stock,
+                featured: product.featured || false,
+                flavor_tags: product.flavor_tags || [],
+                seo_title: product.seo_title || "",
+                seo_description: product.seo_description || "",
+                is_kit: product.is_kit || false,
+                kit_items: product.kit_items || []
+            });
+            if (product.gallery) setGallery(product.gallery);
+            if (product.variants) setVariants(product.variants);
+            if (product.original_price && product.price !== undefined && product.original_price > product.price) {
+                setShowDiscount(true);
+            }
+        }
+    }, [product]); // Removed form from deps to avoid loop if form object reference changes (though useForm ensures stability usually)
+
+    const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        setIsUploadingGallery(true);
+        try {
+            const newUrls: string[] = [];
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Math.random()}.${fileExt}`;
+                const { error: uploadError } = await supabase.storage.from('products').upload(fileName, file);
+                if (uploadError) throw uploadError;
+                const { data: { publicUrl } } = supabase.storage.from('products').getPublicUrl(fileName);
+                newUrls.push(publicUrl);
+            }
+            setGallery([...gallery, ...newUrls]);
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro ao fazer upload das imagens.");
+        } finally {
+            setIsUploadingGallery(false);
+        }
+    };
+
+    const removeGalleryImage = (index: number) => {
+        const newGallery = [...gallery];
+        newGallery.splice(index, 1);
+        setGallery(newGallery);
+    };
+
+    const addVariant = () => {
+        if (!newVariant.name) return;
+        setVariants([...variants, { ...newVariant, id: crypto.randomUUID() }]);
+        setNewVariant({ name: "", value: "#000000", stock: true });
+    };
+
+    const removeVariant = (index: number) => {
+        const newVariants = [...variants];
+        newVariants.splice(index, 1);
+        setVariants(newVariants);
+    };
+
+    const toggleVariantStock = (index: number) => {
+        const newVariants = [...variants];
+        newVariants[index].stock = !newVariants[index].stock;
+        setVariants(newVariants);
+    };
+
+    async function onSubmit(values: z.infer<typeof productSchema>) {
+        // onFormSubmit(values); // REMOVED: conflicting logic
+        setIsLoading(true);
+        try {
+            const productData = {
+                ...values,
+                gallery,
+                variants,
+                // Ensure flavor_tags is array
+                flavor_tags: values.flavor_tags || [],
+                // Ensure kit_items is stored as JSONB if needed, or text[]
+                kit_items: values.is_kit ? values.kit_items : [],
+                // Handle discount logic
+                original_price: showDiscount ? values.original_price : null
+            };
+
+            if (product) {
+                const { error } = await supabase
+                    .from("products")
+                    .update(productData)
+                    .eq("id", product.id);
+
+                if (error) throw error;
+                toast.success("Produto atualizado com sucesso!");
+            } else {
+                const { error } = await supabase
+                    .from("products")
+                    .insert([productData]);
+
+                if (error) throw error;
+                toast.success("Produto criado com sucesso!");
+                form.reset();
+                setGallery([]);
+                setVariants([]);
+            }
+            router.push("/admin/products");
+            router.refresh();
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro ao salvar produto.");
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     useEffect(() => {
         const fetchData = async () => {
+            // Fetch Categories
+            const { data: categoriesData } = await supabase.from("categories").select("id, name").order("name");
+            if (categoriesData) {
+                setCategories(categoriesData);
+            }
+
             // Fetch Tags for Autocomplete
             const { data: tagsData } = await supabase.from("products").select("flavor_tags");
             if (tagsData) {
@@ -96,7 +245,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                         name="image"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Documentação Visual</FormLabel>
+                                <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Imagem de Capa</FormLabel>
                                 <FormControl>
                                     <div className="space-y-4">
                                         {field.value ? (
@@ -104,7 +253,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                                                 <img
                                                     src={field.value}
                                                     alt="Preview"
-                                                    className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 ease-in-out"
+                                                    className="w-full h-full object-cover transition-all duration-700 ease-in-out"
                                                 />
                                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
                                                     <Button
@@ -133,7 +282,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                                                         <Upload className="w-8 h-8 text-white/40 mb-2" />
                                                     )}
                                                     <p className="text-[9px] uppercase font-bold tracking-widest text-slate-500">
-                                                        UPLOAD_IMG
+                                                        UPLOAD CAPA
                                                     </p>
                                                 </div>
                                                 <Input id="image-upload" type="file" accept="image/*" className="hidden" disabled={isUploading} onChange={async (e) => {
@@ -149,7 +298,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                                                         field.onChange(publicUrl);
                                                     } catch (error) {
                                                         console.error(error);
-                                                        alert("CRITICAL_UPLOAD_FAILURE");
+                                                        toast.error("Erro no upload.");
                                                     } finally {
                                                         setIsUploading(false);
                                                     }
@@ -162,6 +311,80 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                             </FormItem>
                         )}
                     />
+
+                    {/* Gallery Section */}
+                    <div className="space-y-2 pt-4 border-t border-white/5">
+                        <Label className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Galeria de Imagens</Label>
+                        <div className="grid grid-cols-4 gap-2">
+                            {gallery.map((url, idx) => (
+                                <div key={idx} className="relative aspect-square border border-white/10 bg-black group">
+                                    <img src={url} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
+                                    <button
+                                        type="button"
+                                        onClick={() => removeGalleryImage(idx)}
+                                        className="absolute top-0 right-0 bg-red-600 text-white p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <X size={12} />
+                                    </button>
+                                </div>
+                            ))}
+                            <label className={`flex flex-col items-center justify-center aspect-square border-2 border-dashed border-white/10 hover:border-primary/50 cursor-pointer bg-white/5 hover:bg-white/10 transition-all ${isUploadingGallery ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                <Plus size={20} className="text-slate-400" />
+                                <Input type="file" multiple accept="image/*" className="hidden" onChange={handleGalleryUpload} disabled={isUploadingGallery} />
+                            </label>
+                        </div>
+                    </div>
+
+                    {/* Variants Section */}
+                    <div className="space-y-4 pt-4 border-t border-white/5">
+                        <Label className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Variações / Cores</Label>
+
+                        <div className="flex gap-2 items-end bg-white/5 p-2 border border-white/10">
+                            <div className="space-y-1 flex-1">
+                                <Label className="text-[9px] uppercase font-bold text-slate-500">Nome (Ex: Azul)</Label>
+                                <Input
+                                    value={newVariant.name}
+                                    onChange={(e) => setNewVariant({ ...newVariant, name: e.target.value })}
+                                    className="h-8 text-xs bg-black border-white/10 rounded-none uppercase"
+                                />
+                            </div>
+                            <div className="space-y-1 w-20">
+                                <Label className="text-[9px] uppercase font-bold text-slate-500">Cor</Label>
+                                <div className="flex h-8 w-full border border-white/10 overflow-hidden relative">
+                                    <Input
+                                        type="color"
+                                        value={newVariant.value}
+                                        onChange={(e) => setNewVariant({ ...newVariant, value: e.target.value })}
+                                        className="h-10 w-[150%] -translate-x-[25%] -translate-y-[10%] p-0 bg-transparent border-none cursor-pointer"
+                                    />
+                                </div>
+                            </div>
+                            <Button type="button" onClick={addVariant} className="h-8 w-8 p-0 rounded-none bg-primary text-black hover:bg-white">
+                                <Plus size={16} />
+                            </Button>
+                        </div>
+
+                        <div className="space-y-2">
+                            {variants.map((variant, idx) => (
+                                <div key={idx} className="flex items-center gap-3 bg-black border border-white/10 p-2 group">
+                                    <div className="w-4 h-4 border border-white/20" style={{ backgroundColor: variant.value }}></div>
+                                    <span className="flex-1 text-xs uppercase font-bold text-slate-300">{variant.name}</span>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleVariantStock(idx)}
+                                        className={`text-[9px] font-black uppercase tracking-wider px-2 py-1 transition-colors ${variant.stock ? 'text-primary' : 'text-red-500'}`}
+                                    >
+                                        {variant.stock ? 'EM ESTOQUE' : 'SEM ESTOQUE'}
+                                    </button>
+
+                                    <button type="button" onClick={() => removeVariant(idx)} className="text-slate-500 hover:text-red-500 transition-colors">
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
 
                     {/* Status Toggles */}
                     <div className="space-y-4 pt-4 border-t border-white/5">
@@ -195,8 +418,8 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                         />
                     </div>
 
-                    <Button type="submit" disabled={isLoading} className="w-full h-14 rounded-none bg-primary text-black font-bold hover:bg-white transition-all uppercase tracking-[0.2em] text-xs mt-auto">
-                        {isLoading ? "Salvando..." : "Confirmar Alterações"}
+                    <Button type="submit" disabled={isLoading || parentIsLoading} className="w-full h-14 rounded-none bg-primary text-black font-bold hover:bg-white transition-all uppercase tracking-[0.2em] text-xs mt-auto">
+                        {isLoading || parentIsLoading ? "Salvando..." : "Confirmar Alterações"}
                     </Button>
                 </div>
 
@@ -219,12 +442,11 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent className="bg-black border-2 border-white/10 text-white rounded-none">
-                                        <SelectItem value="Kits">KITS (COMBOS)</SelectItem>
-                                        <SelectItem value="Essências">ESSÊNCIAS</SelectItem>
-                                        <SelectItem value="Carvão">CARVÃO</SelectItem>
-                                        <SelectItem value="Acessórios">ACESSÓRIOS</SelectItem>
-                                        <SelectItem value="Narguiles">NARGUILES</SelectItem>
-                                        <SelectItem value="Pod Descartável">POD DESCARTÁVEL</SelectItem>
+                                        {categories.map((cat) => (
+                                            <SelectItem key={cat.id} value={cat.name}>
+                                                {cat.name.toUpperCase()}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -249,79 +471,99 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                                 )}
                             />
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                                <FormField
-                                    control={form.control}
-                                    name="original_price"
-                                    render={({ field }) => (
-                                        <FormItem className="space-y-2">
-                                            <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500 h-4 block">
-                                                Preço Atual (Sem Desconto)
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all text-sm font-mono placeholder:text-slate-700"
-                                                    placeholder="R$ 0,00"
-                                                    value={typeof field.value === 'number' ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(field.value) : ""}
-                                                    onChange={(e) => {
-                                                        const value = e.target.value.replace(/\D/g, "");
-                                                        const numberValue = Number(value) / 100;
-                                                        field.onChange(numberValue);
-                                                    }}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                            <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-2 leading-relaxed h-[36px]">
-                                                * Para dar desconto, preencha este campo com o preço normal. O "Novo Preço" deve ser menor.
-                                            </p>
-                                            {(field.value || 0) > 0 && (field.value || 0) <= (form.watch("price") || 0) && (
-                                                <p className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest mt-1 animate-pulse">
-                                                    ⚠ Atenção: Para gerar desconto, o "Preço Atual" deve ser MAIOR que o "Novo Preço".
-                                                </p>
-                                            )}
-                                        </FormItem>
-                                    )}
-                                />
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-4 border p-4 border-white/10 bg-white/5">
+                                    <Switch
+                                        checked={showDiscount}
+                                        onCheckedChange={(checked) => {
+                                            setShowDiscount(checked);
+                                            if (!checked) {
+                                                form.setValue("original_price", 0);
+                                            }
+                                        }}
+                                        id="discount-mode"
+                                    />
+                                    <Label htmlFor="discount-mode" className="text-xs uppercase font-bold tracking-widest text-white cursor-pointer select-none">
+                                        Aplicar Desconto / Promoção?
+                                    </Label>
+                                </div>
 
-                                <FormField
-                                    control={form.control}
-                                    name="price"
-                                    render={({ field }) => {
-                                        const originalPrice = form.watch("original_price") || 0;
-                                        const currentPrice = field.value || 0;
-                                        const discount = originalPrice > currentPrice
-                                            ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
-                                            : 0;
-
-                                        return (
-                                            <FormItem className="space-y-2">
-                                                <div className="flex justify-between items-center h-4">
-                                                    <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500 block">
-                                                        Novo Preço (Com Desconto)
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                                    {showDiscount && (
+                                        <FormField
+                                            control={form.control}
+                                            name="original_price"
+                                            render={({ field }) => (
+                                                <FormItem className="space-y-2 animate-in slide-in-from-left-4 fade-in duration-300">
+                                                    <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500 h-4 block">
+                                                        Preço Original (De)
                                                     </FormLabel>
-                                                    {discount > 0 && (
-                                                        <span className="bg-primary text-black text-[9px] font-black px-1.5 py-0.5 animate-in fade-in zoom-in">
-                                                            {discount}% OFF
-                                                        </span>
+                                                    <FormControl>
+                                                        <Input
+                                                            className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all text-sm font-mono placeholder:text-slate-700"
+                                                            placeholder="R$ 0,00"
+                                                            value={typeof field.value === 'number' ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(field.value) : ""}
+                                                            onChange={(e) => {
+                                                                const value = e.target.value.replace(/\D/g, "");
+                                                                const numberValue = Number(value) / 100;
+                                                                field.onChange(numberValue);
+                                                            }}
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                    <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-2 leading-relaxed h-[36px]">
+                                                        * Preço "cheio" anterior.
+                                                    </p>
+                                                    {(field.value || 0) > 0 && (field.value || 0) <= (form.watch("price") || 0) && (
+                                                        <p className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest mt-1 animate-pulse">
+                                                            ⚠ Erro: O preço original deve ser maior que o promocional.
+                                                        </p>
                                                     )}
-                                                </div>
-                                                <FormControl>
-                                                    <Input
-                                                        className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all text-sm font-mono placeholder:text-slate-700"
-                                                        placeholder="R$ 0,00"
-                                                        value={field.value ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(field.value) : ""}
-                                                        onChange={(e) => {
-                                                            const value = e.target.value.replace(/\D/g, "");
-                                                            const numberValue = Number(value) / 100;
-                                                            field.onChange(numberValue);
-                                                        }}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        );
-                                    }}
-                                />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    )}
+
+                                    <FormField
+                                        control={form.control}
+                                        name="price"
+                                        render={({ field }) => {
+                                            const originalPrice = form.watch("original_price") || 0;
+                                            const currentPrice = field.value || 0;
+                                            const discount = showDiscount && originalPrice > currentPrice
+                                                ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
+                                                : 0;
+
+                                            return (
+                                                <FormItem className="space-y-2">
+                                                    <div className="flex justify-between items-center h-4">
+                                                        <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-primary block">
+                                                            {showDiscount ? "Preço Promocional (Por)" : "Preço do Produto"}
+                                                        </FormLabel>
+                                                        {discount > 0 && (
+                                                            <span className="bg-primary text-black text-[9px] font-black px-1.5 py-0.5 animate-in fade-in zoom-in">
+                                                                {discount}% OFF
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <FormControl>
+                                                        <Input
+                                                            className="bg-black border-2 border-white/10 text-white rounded-none h-12 focus:border-primary transition-all text-sm font-mono placeholder:text-slate-700"
+                                                            placeholder="R$ 0,00"
+                                                            value={field.value ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(field.value) : ""}
+                                                            onChange={(e) => {
+                                                                const value = e.target.value.replace(/\D/g, "");
+                                                                const numberValue = Number(value) / 100;
+                                                                field.onChange(numberValue);
+                                                            }}
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            );
+                                        }}
+                                    />
+                                </div>
                             </div>
 
                             <FormField
