@@ -5,7 +5,7 @@ import { Product } from "@/types";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, ShoppingCart, Minus } from "lucide-react";
+import { Plus, ArrowLeft } from "lucide-react";
 import { formatBRL } from "@/utils/format";
 import { useCartStore } from "@/store/cartStore";
 import { toast } from "sonner";
@@ -76,17 +76,18 @@ export default function ProductView({ product, kitItemsData }: ProductViewProps)
 
                 {/* Thumbnails */}
                 {allImages.length > 1 && (
-                    <div className="flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
+                    <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
                         {allImages.map((img, idx) => (
                             <button
                                 key={idx}
                                 onClick={() => setSelectedImage(img)}
+                                aria-label={`Ver imagem ${idx + 1}`}
                                 className={cn(
-                                    "relative w-20 h-20 border-2 transition-all flex-shrink-0",
+                                    "relative w-20 h-20 border-2 transition-all flex-shrink-0 bg-black",
                                     selectedImage === img ? "border-primary" : "border-white/10 hover:border-white/30"
                                 )}
                             >
-                                <Image src={img} alt={`View ${idx}`} fill className="object-cover" />
+                                <Image src={img} alt={`${product.name} - Vista ${idx + 1}`} fill className="object-cover" />
                             </button>
                         ))}
                     </div>
@@ -135,6 +136,7 @@ export default function ProductView({ product, kitItemsData }: ProductViewProps)
                                     key={variant.id}
                                     onClick={() => variant.stock && setSelectedVariant(variant)}
                                     disabled={!variant.stock}
+                                    aria-label={`Selecionar ${variant.name}${!variant.stock ? ' (Indisponível)' : ''}`}
                                     className={cn(
                                         "group flex items-center gap-3 px-4 py-2 border-2 transition-all min-w-[140px]",
                                         selectedVariant?.id === variant.id
@@ -187,6 +189,7 @@ export default function ProductView({ product, kitItemsData }: ProductViewProps)
                 <Button
                     onClick={handleAddToCart}
                     disabled={!product.stock || (product.variants && product.variants.length > 0 && !selectedVariant)}
+                    aria-label={product.stock ? "Adicionar este produto ao carrinho" : "Produto indisponível"}
                     className="w-full bg-primary text-black font-black uppercase tracking-widest py-8 text-base hover:bg-white transition-colors flex items-center justify-center gap-2 rounded-none disabled:bg-zinc-800 disabled:text-zinc-500 disabled:opacity-100 disabled:cursor-not-allowed"
                 >
                     <Plus className="w-5 h-5" />

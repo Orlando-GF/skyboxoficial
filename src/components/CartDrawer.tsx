@@ -104,7 +104,7 @@ ${paymentMethod === 'cash' ? '(X) Dinheiro/Entrega' : '( ) Dinheiro/Entrega'}
                     >
                         <div className="p-5 border-b-2 border-white/5 flex items-center justify-between shrink-0">
                             <h2 className="text-2xl font-display font-bold text-white uppercase tracking-tighter">SEU CARRINHO</h2>
-                            <button onClick={toggleCart} className="text-primary/60 hover:text-primary transition-colors border border-white/10 p-2 hover:bg-primary/5">
+                            <button onClick={toggleCart} aria-label="Fechar carrinho" className="text-primary/60 hover:text-primary transition-colors border border-white/10 p-2 hover:bg-primary/5">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -120,7 +120,7 @@ ${paymentMethod === 'cash' ? '(X) Dinheiro/Entrega' : '( ) Dinheiro/Entrega'}
                                     <motion.div
                                         layout
                                         key={item.id}
-                                        className="flex gap-4 p-4 bg-white/5 border-2 border-white/5"
+                                        className="flex gap-4 p-4 bg-white/5 border-2 border-white/10 transition-colors hover:border-primary/20"
                                     >
                                         <div className="relative w-20 h-20 rounded-none overflow-hidden bg-black/20 shrink-0 border border-white/10">
                                             {/* Placeholder image */}
@@ -149,6 +149,7 @@ ${paymentMethod === 'cash' ? '(X) Dinheiro/Entrega' : '( ) Dinheiro/Entrega'}
                                                 <div className="flex items-center gap-2 bg-white/10 p-1">
                                                     <button
                                                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                        aria-label="Diminuir quantidade"
                                                         className="p-1 hover:text-primary transition-colors disabled:opacity-30"
                                                         disabled={item.quantity <= 1}
                                                     >
@@ -157,6 +158,7 @@ ${paymentMethod === 'cash' ? '(X) Dinheiro/Entrega' : '( ) Dinheiro/Entrega'}
                                                     <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
                                                     <button
                                                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                        aria-label="Aumentar quantidade"
                                                         className="p-1 hover:text-primary transition-colors"
                                                     >
                                                         <Plus className="w-4 h-4" />
@@ -164,7 +166,8 @@ ${paymentMethod === 'cash' ? '(X) Dinheiro/Entrega' : '( ) Dinheiro/Entrega'}
                                                 </div>
                                                 <button
                                                     onClick={() => removeItem(item.id)}
-                                                    className="text-primary/40 hover:text-red-500 transition-colors ml-auto p-1 border border-white/5 hover:border-red-500/20"
+                                                    aria-label={`Remover ${item.name} do carrinho`}
+                                                    className="text-primary/40 hover:text-red-500 transition-colors ml-auto p-1 border border-white/10 hover:border-red-500/20"
                                                 >
                                                     <Trash2 className="w-5 h-5" />
                                                 </button>

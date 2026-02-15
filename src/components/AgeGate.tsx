@@ -41,10 +41,6 @@ export default function AgeGate() {
                         animate={{ scale: 1, y: 0 }}
                         className="w-full max-w-md bg-black border-2 border-primary p-8 md:p-12 text-center relative overflow-y-auto max-h-[90vh] no-scrollbar"
                     >
-                        <style jsx>{`
-                            .no-scrollbar::-webkit-scrollbar { display: none; }
-                            .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-                        `}</style>
                         {/* Background Glow */}
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-primary/20 blur-[100px] rounded-full" />
 
@@ -66,12 +62,14 @@ export default function AgeGate() {
                             <div className="flex flex-col gap-4 w-full">
                                 <button
                                     onClick={handleVerify}
+                                    aria-label="Autorizar acesso (Sou maior de 18 anos)"
                                     className="w-full bg-primary text-black font-black py-4 px-8 hover:bg-white transition-all uppercase tracking-widest text-xs"
                                 >
                                     AUTORIZAR ACESSO
                                 </button>
                                 <button
                                     onClick={handleReject}
+                                    aria-label="Sair (Não sou maior de 18 anos)"
                                     className="w-full bg-transparent border-2 border-white/20 hover:border-white text-white font-bold py-4 px-8 transition-all uppercase tracking-widest text-xs"
                                 >
                                     NÃO SOU DE MAIOR

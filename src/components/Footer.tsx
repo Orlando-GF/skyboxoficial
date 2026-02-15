@@ -35,13 +35,13 @@ export default async function Footer() {
                             Produtos premium e atendimento exclusivo.
                         </p>
                         <div className="flex gap-2">
-                            <a href={store.instagram} target="_blank" rel="noopener noreferrer" className="bg-black border border-white/5 hover:bg-primary hover:text-black transition-all text-primary/40 hover:border-primary p-4">
+                            <a href={store.instagram} target="_blank" rel="noopener noreferrer" aria-label="Acessar nosso Instagram" className="bg-black border border-white/10 hover:bg-primary hover:text-black transition-all text-primary/40 hover:border-primary p-4">
                                 <Instagram className="w-5 h-5" />
                             </a>
-                            <a href={store.facebook} target="_blank" rel="noopener noreferrer" className="bg-black border border-white/5 hover:bg-primary hover:text-black transition-all text-primary/40 hover:border-primary p-4">
+                            <a href={store.facebook} target="_blank" rel="noopener noreferrer" aria-label="Acessar nosso Facebook" className="bg-black border border-white/10 hover:bg-primary hover:text-black transition-all text-primary/40 hover:border-primary p-4">
                                 <Facebook className="w-5 h-5" />
                             </a>
-                            <a href={`${LINKS.WHATSAPP_BASE}${store.whatsapp}`} target="_blank" rel="noopener noreferrer" className="bg-black border border-white/5 hover:bg-primary hover:text-black transition-all text-primary/40 hover:border-primary p-4">
+                            <a href={`${LINKS.WHATSAPP_BASE}${store.whatsapp}`} target="_blank" rel="noopener noreferrer" aria-label="Falar conosco via WhatsApp" className="bg-black border border-white/10 hover:bg-primary hover:text-black transition-all text-primary/40 hover:border-primary p-4">
                                 <Phone className="w-5 h-5" />
                             </a>
                         </div>

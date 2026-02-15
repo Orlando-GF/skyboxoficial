@@ -26,13 +26,19 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { TagInput } from "@/components/ui/tag-input";
-import { X, Upload, Loader2, Image as ImageIcon, Search, Plus } from "lucide-react";
-import { toTitleCase } from "@/lib/utils";
+import { X, Upload, Loader2, Image as ImageIcon, Search, Plus, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
-import { Trash2 } from "lucide-react";
 
 interface ProductFormProps {
     initialData?: Partial<ProductFormValues> & {
@@ -83,6 +89,12 @@ export function ProductForm({ initialData, onSubmit: parentOnSubmit, isLoading: 
     // Variants State
     const [variants, setVariants] = useState<{ id: string; name: string; value: string; stock: boolean }[]>([]);
     const [newVariant, setNewVariant] = useState({ name: "", value: "#000000", stock: true });
+
+    // Confirm States
+    const [isConfirmingImageSwap, setIsConfirmingImageSwap] = useState(false);
+    const [pendingImageIndex, setPendingImageIndex] = useState<number | null>(null);
+    const [isConfirmingFeaturedToggle, setIsConfirmingFeaturedToggle] = useState(false);
+    const [pendingFeaturedValue, setPendingFeaturedValue] = useState(false);
 
     // Discount State
     const [showDiscount, setShowDiscount] = useState(false);
@@ -143,6 +155,28 @@ export function ProductForm({ initialData, onSubmit: parentOnSubmit, isLoading: 
         setGallery(newGallery);
     };
 
+    const setAsMainImage = (index: number) => {
+        setPendingImageIndex(index);
+        setIsConfirmingImageSwap(true);
+    };
+
+    const handleConfirmImageSwap = () => {
+        if (pendingImageIndex === null) return;
+
+        const selectedImage = gallery[pendingImageIndex];
+        const currentMainImage = form.getValues("image") || "";
+
+        // Swap images
+        const newGallery = [...gallery];
+        newGallery[pendingImageIndex] = currentMainImage;
+        setGallery(newGallery);
+        form.setValue("image", selectedImage);
+        toast.success("Imagem de capa alterada!");
+
+        setIsConfirmingImageSwap(false);
+        setPendingImageIndex(null);
+    };
+
     const addVariant = () => {
         if (!newVariant.name) return;
         setVariants([...variants, { ...newVariant, id: crypto.randomUUID() }]);
@@ -165,6 +199,19 @@ export function ProductForm({ initialData, onSubmit: parentOnSubmit, isLoading: 
         // onFormSubmit(values); // REMOVED: conflicting logic
         setIsLoading(true);
         try {
+            // If this product is being featured, unfeature all others first
+            if (values.featured) {
+                const { error: unfeatureError } = await supabase
+                    .from("products")
+                    .update({ featured: false })
+                    .neq("id", product?.id || ""); // Don't unfeature itself if updating
+
+                if (unfeatureError) {
+                    console.error("Error unfeaturing other products:", unfeatureError);
+                    // We continue even if this fails, as it's a non-critical side effect
+                }
+            }
+
             const productData = {
                 ...values,
                 gallery,
@@ -319,13 +366,24 @@ export function ProductForm({ initialData, onSubmit: parentOnSubmit, isLoading: 
                             {gallery.map((url, idx) => (
                                 <div key={idx} className="relative aspect-square border border-white/10 bg-black group">
                                     <img src={url} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
-                                    <button
-                                        type="button"
-                                        onClick={() => removeGalleryImage(idx)}
-                                        className="absolute top-0 right-0 bg-red-600 text-white p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                        <X size={12} />
-                                    </button>
+                                    <div className="absolute top-0 right-0 p-1 flex gap-1 transform translate-y-[-10px] group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all">
+                                        <button
+                                            type="button"
+                                            onClick={() => setAsMainImage(idx)}
+                                            title="Definir como Capa"
+                                            className="bg-primary text-black p-1 hover:bg-white transition-colors"
+                                        >
+                                            <Star size={12} fill="currentColor" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeGalleryImage(idx)}
+                                            title="Remover Imagem"
+                                            className="bg-red-600 text-white p-1 hover:bg-red-500 transition-colors"
+                                        >
+                                            <X size={12} />
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                             <label className={`flex flex-col items-center justify-center aspect-square border-2 border-dashed border-white/10 hover:border-primary/50 cursor-pointer bg-white/5 hover:bg-white/10 transition-all ${isUploadingGallery ? 'opacity-50 cursor-not-allowed' : ''}`}>
@@ -411,7 +469,18 @@ export function ProductForm({ initialData, onSubmit: parentOnSubmit, isLoading: 
                                         <FormLabel className="text-[9px] uppercase font-bold tracking-[0.2em] text-primary">Destaque ⚡</FormLabel>
                                     </div>
                                     <FormControl>
-                                        <Switch checked={field.value} onCheckedChange={field.onChange} className="data-[state=checked]:bg-primary" />
+                                        <Switch
+                                            checked={field.value}
+                                            onCheckedChange={(checked) => {
+                                                if (checked) {
+                                                    setPendingFeaturedValue(true);
+                                                    setIsConfirmingFeaturedToggle(true);
+                                                } else {
+                                                    field.onChange(false);
+                                                }
+                                            }}
+                                            className="data-[state=checked]:bg-primary"
+                                        />
                                     </FormControl>
                                 </FormItem>
                             )}
@@ -870,6 +939,65 @@ export function ProductForm({ initialData, onSubmit: parentOnSubmit, isLoading: 
                         </div>
                     </div>
 
+                    <Dialog open={isConfirmingImageSwap} onOpenChange={setIsConfirmingImageSwap}>
+                        <DialogContent className="bg-black border-2 border-primary/20 text-white rounded-none max-w-sm">
+                            <DialogHeader>
+                                <DialogTitle className="text-primary uppercase tracking-tighter font-black text-xl">Confirmar Troca</DialogTitle>
+                                <DialogDescription className="text-slate-400 text-xs uppercase tracking-widest font-medium pt-2 leading-relaxed">
+                                    Deseja definir esta imagem como a principal (capa)? A imagem atual de capa irá para a galeria.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter className="flex gap-3 font-bold uppercase tracking-widest text-[10px] pt-4">
+                                <Button
+                                    variant="outline"
+                                    type="button"
+                                    onClick={() => setIsConfirmingImageSwap(false)}
+                                    className="rounded-none border-white/10 bg-transparent text-white hover:bg-white/5 hover:text-white h-10"
+                                >
+                                    CANCELAR
+                                </Button>
+                                <Button
+                                    type="button"
+                                    onClick={handleConfirmImageSwap}
+                                    className="rounded-none bg-primary text-black hover:bg-white transition-all font-black h-10"
+                                >
+                                    CONFIRMAR TROCA
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+
+                    <Dialog open={isConfirmingFeaturedToggle} onOpenChange={setIsConfirmingFeaturedToggle}>
+                        <DialogContent className="bg-black border-2 border-primary/20 text-white rounded-none max-w-sm">
+                            <DialogHeader>
+                                <DialogTitle className="text-primary uppercase tracking-tighter font-black text-xl">Destaque Exclusivo</DialogTitle>
+                                <DialogDescription className="text-slate-400 text-xs uppercase tracking-widest font-medium pt-2 leading-relaxed">
+                                    Ao marcar este produto como destaque, todos os outros produtos da loja perderão o status de destaque. Deseja prosseguir?
+                                </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter className="flex gap-3 font-bold uppercase tracking-widest text-[10px] pt-4">
+                                <Button
+                                    variant="outline"
+                                    type="button"
+                                    onClick={() => setIsConfirmingFeaturedToggle(false)}
+                                    className="rounded-none border-white/10 bg-transparent text-white hover:bg-white/5 hover:text-white h-10"
+                                >
+                                    CANCELAR
+                                </Button>
+                                <Button
+                                    type="button"
+                                    onClick={() => {
+                                        form.setValue("featured", true);
+                                        setIsConfirmingFeaturedToggle(false);
+                                        toast.info("Destaque ativado!");
+                                    }}
+                                    className="rounded-none bg-primary text-black hover:bg-white transition-all font-black h-10"
+                                >
+                                    ATIVAR DESTAQUE
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </form>
         </Form >

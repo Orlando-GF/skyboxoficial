@@ -11,10 +11,14 @@ import { normalizeProducts } from "@/utils/productUtils";
 
 interface CatalogClientProps {
     initialProducts: Product[];
+    categories: string[];
 }
 
-export default function CatalogClient({ initialProducts }: CatalogClientProps) {
+export default function CatalogClient({ initialProducts, categories }: CatalogClientProps) {
     const [selectedCategory, setSelectedCategory] = useState("Todos");
+
+    // Combine "Todos" with categories from database
+    const allCategories = ["Todos", ...categories];
     const [searchQuery, setSearchQuery] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
 
@@ -70,17 +74,14 @@ export default function CatalogClient({ initialProducts }: CatalogClientProps) {
 
             {/* Category Tabs - Horizontal Scroll on Mobile, Wrapped on Desktop */}
             <div className="flex flex-nowrap overflow-x-auto pb-4 mb-12 gap-4 no-scrollbar md:flex-wrap md:justify-center md:pb-0 md:overflow-visible">
-                <style jsx>{`
-                    .no-scrollbar::-webkit-scrollbar { display: none; }
-                    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-                `}</style>
-                {CATEGORIES.map(category => (
+                {allCategories.map(category => (
                     <button
                         key={category}
                         onClick={() => {
                             setSelectedCategory(category);
                             setCurrentPage(1);
                         }}
+                        aria-label={`Filtrar por ${category}`}
                         className={`px-8 py-3 font-bold border-2 transition-all uppercase tracking-widest text-[10px] ${selectedCategory === category
                             ? "bg-primary border-primary text-black"
                             : "bg-transparent border-white/10 text-primary/60 hover:border-white hover:text-white"
@@ -106,6 +107,7 @@ export default function CatalogClient({ initialProducts }: CatalogClientProps) {
                             <button
                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                 disabled={currentPage === 1}
+                                aria-label="Página anterior"
                                 className="p-3 bg-black border-2 border-white/10 text-primary/40 hover:border-primary hover:text-primary disabled:opacity-20 disabled:cursor-not-allowed transition-all"
                             >
                                 <ChevronLeft size={20} />
@@ -115,6 +117,7 @@ export default function CatalogClient({ initialProducts }: CatalogClientProps) {
                                 <button
                                     key={page}
                                     onClick={() => setCurrentPage(page)}
+                                    aria-label={`Ir para a página ${page}`}
                                     className={`w-12 h-12 font-bold border-2 transition-all text-xs ${currentPage === page
                                         ? "bg-primary border-primary text-black"
                                         : "bg-black border-white/10 text-primary/40 hover:border-white hover:text-white"
@@ -127,6 +130,7 @@ export default function CatalogClient({ initialProducts }: CatalogClientProps) {
                             <button
                                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                 disabled={currentPage === totalPages}
+                                aria-label="Próxima página"
                                 className="p-3 bg-black border-2 border-white/10 text-primary/40 hover:border-primary hover:text-primary disabled:opacity-20 disabled:cursor-not-allowed transition-all"
                             >
                                 <ChevronRight size={20} />
