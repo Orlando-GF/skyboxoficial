@@ -127,7 +127,7 @@ export default function LandingPage({ products }: LandingPageProps) {
                             </div>
                             {featuredProduct.image ? (
                                 <div
-                                    className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110 z-10 opacity-40 group-hover:opacity-70 grayscale hover:grayscale-0"
+                                    className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110 z-10 opacity-80 group-hover:opacity-100"
                                     style={{ backgroundImage: `url('${featuredProduct.image}')` }}
                                 />
                             ) : (
