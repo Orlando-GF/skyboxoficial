@@ -87,30 +87,52 @@ export default function SettingsPage() {
         }
 
         setSaving(true);
-        const { error } = await supabase
-            .from("store_settings")
-            .update({
-                store_name: config.store_name,
-                whatsapp_number: config.whatsapp_number,
-                instagram_url: config.instagram_url,
-                facebook_url: config.facebook_url,
-                address: config.address,
-                google_maps_url: config.google_maps_url,
-                hours_weekdays: config.hours_weekdays,
-                hours_saturday: config.hours_saturday,
-                hours_sunday: config.hours_sunday,
-                label_weekdays: config.label_weekdays,
-                label_saturday: config.label_saturday,
-                label_sunday: config.label_sunday,
-                cnpj: config.cnpj,
-                terms_content: config.terms_content,
-                payment_discount_percentage: config.payment_discount_percentage,
-                cash_discount_percentage: config.cash_discount_percentage
-            })
-            .eq("id", config.id);
+
+        const payload = {
+            store_name: config.store_name,
+            whatsapp_number: config.whatsapp_number,
+            instagram_url: config.instagram_url,
+            facebook_url: config.facebook_url,
+            address: config.address,
+            google_maps_url: config.google_maps_url,
+            hours_weekdays: config.hours_weekdays,
+            hours_saturday: config.hours_saturday,
+            hours_sunday: config.hours_sunday,
+            label_weekdays: config.label_weekdays,
+            label_saturday: config.label_saturday,
+            label_sunday: config.label_sunday,
+            cnpj: config.cnpj,
+            terms_content: config.terms_content,
+            payment_discount_percentage: config.payment_discount_percentage,
+            cash_discount_percentage: config.cash_discount_percentage
+        };
+
+        let error;
+
+        if (config.id) {
+            // Update existing
+            const result = await supabase
+                .from("store_settings")
+                .update(payload)
+                .eq("id", config.id);
+            error = result.error;
+        } else {
+            // Create new
+            const result = await supabase
+                .from("store_settings")
+                .insert([payload])
+                .select()
+                .single();
+
+            if (result.data) {
+                setConfig({ ...config, id: result.data.id });
+            }
+            error = result.error;
+        }
 
         if (error) {
-            toast.error("Erro ao salvar.");
+            console.error(error);
+            toast.error("Erro ao salvar: " + error.message);
         } else {
             toast.success("Configurações atualizadas com sucesso!");
         }

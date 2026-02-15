@@ -48,9 +48,9 @@ export default function CatalogClient({ initialProducts }: CatalogClientProps) {
 
             {/* Header & Controls */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
-                <h1 className="text-6xl font-display font-bold text-white uppercase tracking-tighter leading-none">
+                <h1 className="text-4xl md:text-6xl font-display font-bold text-white uppercase tracking-tighter leading-none text-center md:text-left">
                     SKYBOX<br />
-                    <span className="text-primary italic">TABACARIA_STORE</span>
+                    <span className="text-primary italic text-2xl md:text-6xl break-all">TABACARIA_STORE</span>
                 </h1>
 
                 <div className="relative w-full md:w-96">
@@ -95,8 +95,8 @@ export default function CatalogClient({ initialProducts }: CatalogClientProps) {
             {paginatedProducts.length > 0 ? (
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 min-h-[600px] content-start">
-                        {paginatedProducts.map(product => (
-                            <ProductCard key={product.id} product={product} />
+                        {paginatedProducts.map((product, index) => (
+                            <ProductCard key={product.id} product={product} priority={index < 4} />
                         ))}
                     </div>
 

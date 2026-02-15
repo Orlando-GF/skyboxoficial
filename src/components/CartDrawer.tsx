@@ -14,16 +14,16 @@ export default function CartDrawer() {
     const { items, isOpen, toggleCart, removeItem, updateQuantity, total } = useCartStore();
 
     const [paymentMethod, setPaymentMethod] = useState("pix");
-    const [discountPercentage, setDiscountPercentage] = useState(5.0);
-    const [cashDiscountPercentage, setCashDiscountPercentage] = useState(5.0);
+    const [discountPercentage, setDiscountPercentage] = useState(0);
+    const [cashDiscountPercentage, setCashDiscountPercentage] = useState(0);
 
     useEffect(() => {
         const fetchSettings = async () => {
             const supabase = createClient();
             const { data } = await supabase.from("store_settings").select("payment_discount_percentage, cash_discount_percentage").single();
             if (data) {
-                setDiscountPercentage(data.payment_discount_percentage ?? 5.0);
-                setCashDiscountPercentage(data.cash_discount_percentage ?? 5.0);
+                setDiscountPercentage(data.payment_discount_percentage ?? 0);
+                setCashDiscountPercentage(data.cash_discount_percentage ?? 0);
             }
         };
         if (isOpen) {

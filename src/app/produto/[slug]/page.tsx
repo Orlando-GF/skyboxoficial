@@ -33,13 +33,13 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
     if (!product) return {};
 
-    const cityName = "São Paulo"; // Default city or geo logic placeholder
+    const title = product.seo_title || `${product.name} | Skybox Tabacaria`;
 
     return {
-        title: `${product.name} | Skybox Tabacaria`,
+        title: title,
         description: product.seo_description || `Compre ${product.name} na Skybox Tabacaria. Entregamos Narguile, Essência e Acessórios.`,
         openGraph: {
-            title: `${product.name} | Skybox Tabacaria`,
+            title: title,
             description: product.seo_description || `Confira ${product.name} e outros produtos premium.`,
             images: [product.image],
         },

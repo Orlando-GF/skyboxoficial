@@ -21,6 +21,7 @@ export default function ProductCard({ product, className, priority }: ProductCar
 
     return (
         <motion.div
+            suppressHydrationWarning
             whileHover={{
                 y: -10,
                 transition: { type: "spring", stiffness: 400, damping: 10 }
@@ -39,6 +40,7 @@ export default function ProductCard({ product, className, priority }: ProductCar
                         alt={product.name}
                         fill
                         priority={priority}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                         className="object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                 )}

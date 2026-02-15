@@ -857,8 +857,11 @@ export function ProductForm({ initialData, onSubmit: parentOnSubmit, isLoading: 
                                 name="seo_title"
                                 render={({ field }) => (
                                     <FormItem>
+                                        <FormLabel className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">
+                                            Meta Title: [Nome do Produto] + [O que é] + [Cidade]
+                                        </FormLabel>
                                         <FormControl>
-                                            <Input {...field} className="bg-black/50 border border-white/5 text-xs h-10" placeholder="Meta Title" />
+                                            <Input {...field} className="bg-black/50 border border-white/5 text-xs h-10" placeholder="Ex: Vaso MD Hookah (Jarro) | Peças para Narguile em Barreiras, BA - Skybox" />
                                         </FormControl>
                                     </FormItem>
                                 )}
